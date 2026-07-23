@@ -40,12 +40,16 @@ M.defaults = defaults
 
 -- ----- accumulated efm state -------------------------------------------------
 
+-- The nx.lsp config name for the shared efm server. ONE efm handles every loaded
+-- language, exactly like the upstream neovim plugin.
+local SERVER = 'efm'
+
 -- efm's global options (command / init_options / root markers / hooks), set by
 -- setup(). Defaults apply when setup() is never called.
 M._opts = {}
 
--- The concrete, resolved efm config so far: filetype -> { <config>, … }, grown one
--- language at a time by load().
+-- The resolved config per language: filetype -> { <config>, … }, grown one language
+-- at a time by load(); efm's whole `settings.languages` map.
 M._languages = {}
 
 -- The filetypes efm is configured for (accumulated, in load order).
@@ -56,10 +60,18 @@ local ft_seen = {}
 -- (and concurrent triggers share one resolution).
 M._loaded = {}
 
--- (Re)configure and enable efm from the accumulated state. Idempotent — nx.lsp.config
--- deep-merges and starts are idempotent server-side, so calling it once per newly
--- loaded language is fine, and nx.lsp.enable attaches the current buffer on the spot.
-local function reconfigure()
+-- True once efm has been configured/enabled at least once, so a later load knows to
+-- RESTART the running server rather than rely on a config change reaching it.
+local efm_live = false
+
+-- Build efm's config from the accumulated state and register + enable it. efm reads
+-- its `languages` map only at spawn (nxvim delivers the config once, at the
+-- handshake; a running efm cannot be reconfigured at runtime), so when a language is
+-- added *after* efm is already running we must RESTART it — otherwise the live server
+-- would never see the new language. (The upstream neovim plugin sidesteps this by
+-- configuring the whole map eagerly, before its one efm ever starts; nxvim's
+-- `nx.lsp.restart` lets us do it lazily against one server instead.)
+local function reconfigure(grew)
   local o = M._opts
   local cfg = {
     cmd = o.command or { 'efm-langserver' },
@@ -80,12 +92,18 @@ local function reconfigure()
     cfg.capabilities = o.capabilities
   end
 
-  nx.lsp.config('efm', cfg)
-  nx.lsp.enable({ 'efm' })
+  nx.lsp.config(SERVER, cfg)
+  nx.lsp.enable({ SERVER })
+  -- If efm was already running before this language, the grown config won't reach the
+  -- live server — restart it so it respawns with the full map.
+  if grew and efm_live then
+    nx.lsp.restart(SERVER)
+  end
+  efm_live = true
 end
 
 -- The actual per-language load: resolve the tool factories (in parallel, over nx.fs),
--- register the resolved configs under `ft`, and (re)configure efm.
+-- register the resolved configs under `ft`, and (re)configure the shared efm.
 local do_load = nx.async(function(ft, tools)
   local promises = {}
   for _, factory in ipairs(tools) do
@@ -95,14 +113,16 @@ local do_load = nx.async(function(ft, tools)
     promises[#promises + 1] = factory()
   end
 
-  M._languages[ft] = nx.await(nx.promise.all(promises))
+  local configs = nx.await(nx.promise.all(promises))
+  local grew = M._languages[ft] == nil
+  M._languages[ft] = configs
   if not ft_seen[ft] then
     ft_seen[ft] = true
     M._filetypes[#M._filetypes + 1] = ft
   end
 
-  reconfigure()
-  return M._languages[ft]
+  reconfigure(grew)
+  return configs
 end)
 
 -- ----- public API ------------------------------------------------------------

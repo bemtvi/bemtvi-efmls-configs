@@ -151,6 +151,13 @@ available as `require("nxvim-efmls-configs").health()`.
 - **Version/file probes** that upstream ran synchronously are now real async: the
   golangci-lint version check runs over `nx.run`, and rustfmt reads `Cargo.toml` for
   its edition over `nx.fs` — no shell trickery, no blocking.
+- **One efm, grown lazily.** Like upstream, a single efm-langserver instance handles
+  every language (its `languages` setting is a `filetype → tools` map). Upstream
+  configures that whole map eagerly, before efm starts. Loading lazily means a
+  language can be added *after* efm is already running — but efm reads its `languages`
+  map only at spawn, so the plugin **restarts** efm (`nx.lsp.restart`) when a new
+  language is loaded, respawning it with the grown map. `nx.lsp.restart` is a small
+  nxvim-core capability added for this (it also underpins a general `:LspRestart`).
 
 ## Development
 
