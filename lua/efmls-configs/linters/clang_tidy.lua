@@ -5,15 +5,17 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'clang-tidy'
-local command = string.format('%s "${INPUT}"', fs.executable(linter))
+return nx.async(function()
+  local linter = 'clang-tidy'
+  local command = string.format('%s "${INPUT}"', nx.await(fs.executable(linter)))
 
-return {
-  prefix = linter,
-  lintIgnoreExitCode = true,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintStdin = false,
-  lintFormats = { '%f:%l:%c: %trror: %m', '%f:%l:%c: %tarning: %m', '%f:%l:%c: %tote: %m' },
-  rootMarkers = {},
-}
+  return {
+    prefix = linter,
+    lintIgnoreExitCode = true,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintStdin = false,
+    lintFormats = { '%f:%l:%c: %trror: %m', '%f:%l:%c: %tarning: %m', '%f:%l:%c: %tote: %m' },
+    rootMarkers = {},
+  }
+end)

@@ -5,15 +5,19 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'checkmake'
-local command =
-  string.format('%s --format=\'{{.LineNumber}}:{{.Violation}} ({{.Rule}})\n\' "${INPUT}"', fs.executable(linter))
+return nx.async(function()
+  local linter = 'checkmake'
+  local command = string.format(
+    '%s --format=\'{{.LineNumber}}:{{.Violation}} ({{.Rule}})\n\' "${INPUT}"',
+    nx.await(fs.executable(linter))
+  )
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintStdin = false,
-  lintFormats = { '%l:%m' },
-  rootMarkers = {},
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintStdin = false,
+    lintFormats = { '%l:%m' },
+    rootMarkers = {},
+  }
+end)

@@ -4,10 +4,12 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'dotnet'
-local command = string.format('%s format ${ROOT}', fs.executable(formatter))
+return nx.async(function()
+  local formatter = 'dotnet'
+  local command = string.format('%s format ${ROOT}', nx.await(fs.executable(formatter)))
 
-return {
-  formatCommand = command,
-  formatStdin = false,
-}
+  return {
+    formatCommand = command,
+    formatStdin = false,
+  }
+end)

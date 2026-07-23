@@ -4,10 +4,12 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'lua-format'
-local command = string.format("%s '${INPUT}'", fs.executable(formatter))
+return nx.async(function()
+  local formatter = 'lua-format'
+  local command = string.format("%s '${INPUT}'", nx.await(fs.executable(formatter)))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

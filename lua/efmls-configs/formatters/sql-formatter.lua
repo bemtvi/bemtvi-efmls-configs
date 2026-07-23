@@ -4,10 +4,12 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'sql-formatter'
-local command = string.format('%s', fs.executable(formatter, fs.Scope.NODE))
+return nx.async(function()
+  local formatter = 'sql-formatter'
+  local command = string.format('%s', nx.await(fs.executable(formatter, fs.Scope.NODE)))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

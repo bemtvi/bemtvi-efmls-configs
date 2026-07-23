@@ -1,24 +1,15 @@
-local info = require('efmls-configs.logger').info
-
-if vim.fn.has('nvim-0.11') == 0 then
-  local lspconfig_ok, lspconfig = pcall(require, 'lspconfig')
-  if not lspconfig_ok then
-    local errmsg = '[efmls-configs] `nvim-lspconfig` plugin is required! Please install via your plugin manager.'
-    vim.api.nvim_err_writeln(errmsg)
-    return
-  end
-end
+-- `require('efmls-configs')` — the tool-config *library*. The individual presets
+-- live under `efmls-configs.linters.*` / `efmls-configs.formatters.*` and the default
+-- language map under `efmls-configs.defaults`; this module just re-exports the pieces
+-- for convenience.
+--
+-- To wire everything into efm-langserver in one call, use the plugin's native entry
+-- point instead: `require('nxvim-efmls-configs').setup{ … }` (see its README).
 
 local M = {}
 
--- REMOVED
-M.init = function(user_efmls_opts)
-  info('[efmls-configs] init() and setup() is no longer required, check `:help efmls-configs-setup` for the new way.')
-end
-
--- REMOVED
-M.setup = function(filetypes)
-  info('[efmls-configs] init() and setup() is no longer required, check `:help efmls-configs-setup` for the new way.')
-end
+M.defaults = require('efmls-configs.defaults')
+M.fs = require('efmls-configs.fs')
+M.utils = require('efmls-configs.utils')
 
 return M

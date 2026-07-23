@@ -4,11 +4,13 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'php-cs-fixer'
-local args = "fix --no-ansi --using-cache=no --quiet '${INPUT}'"
-local command = string.format('%s %s', fs.executable(formatter, fs.Scope.COMPOSER), args)
+return nx.async(function()
+  local formatter = 'php-cs-fixer'
+  local args = "fix --no-ansi --using-cache=no --quiet '${INPUT}'"
+  local command = string.format('%s %s', nx.await(fs.executable(formatter, fs.Scope.COMPOSER)), args)
 
-return {
-  formatCommand = command,
-  formatStdin = false,
-}
+  return {
+    formatCommand = command,
+    formatStdin = false,
+  }
+end)

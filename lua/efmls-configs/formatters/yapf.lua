@@ -4,20 +4,25 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'yapf'
-local command = string.format(
-  "%s $(echo ${--useless:rowStart} ${--useless:rowEnd} | xargs -n4 -r sh -c 'echo --lines=$(($1+1))-$(($3+1))')",
-  fs.executable(formatter)
-)
+return nx.async(function()
+  local bin = nx.await(fs.executable('yapf'))
 
-local has_xargs = vim.fn.executable('xargs') == 1
-if not has_xargs then
-  command = string.format('%s', fs.executable(formatter))
-end
+  -- Range formatting is expressed through `xargs`. Probe for it asynchronously; fall
+  -- back to whole-buffer formatting when it is not available.
+  local has_xargs = nx.await(fs.has_executable('xargs'))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-  formatCanRange = has_xargs,
-  rootMarkers = { '.style.yapf', 'setup.cfg', 'pyproject.toml', 'setup.py' },
-}
+  local command = bin
+  if has_xargs then
+    command = string.format(
+      "%s $(echo ${--useless:rowStart} ${--useless:rowEnd} | xargs -n4 -r sh -c 'echo --lines=$(($1+1))-$(($3+1))')",
+      bin
+    )
+  end
+
+  return {
+    formatCommand = command,
+    formatStdin = true,
+    formatCanRange = has_xargs,
+    rootMarkers = { '.style.yapf', 'setup.cfg', 'pyproject.toml', 'setup.py' },
+  }
+end)

@@ -4,9 +4,11 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = fs.executable('typstfmt')
-local command = string.format('%s -o -', fs.executable(formatter))
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+return nx.async(function()
+  local formatter = nx.await(fs.executable('typstfmt'))
+  local command = string.format('%s -o -', nx.await(fs.executable(formatter)))
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

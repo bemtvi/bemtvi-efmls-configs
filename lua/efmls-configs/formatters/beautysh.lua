@@ -4,11 +4,13 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'beautysh'
-local command = string.format('%s -', fs.executable(formatter))
+return nx.async(function()
+  local formatter = 'beautysh'
+  local command = string.format('%s -', nx.await(fs.executable(formatter)))
 
-return {
-  prefix = formatter,
-  formatCommand = command,
-  formatStdin = true,
-}
+  return {
+    prefix = formatter,
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

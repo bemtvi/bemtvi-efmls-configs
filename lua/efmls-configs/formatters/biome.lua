@@ -4,12 +4,14 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'biome'
-local args = "check --write --stdin-file-path '${INPUT}'"
-local command = string.format('%s %s', fs.executable(formatter, fs.Scope.NODE), args)
+return nx.async(function()
+  local formatter = 'biome'
+  local args = "check --write --stdin-file-path '${INPUT}'"
+  local command = string.format('%s %s', nx.await(fs.executable(formatter, fs.Scope.NODE)), args)
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-  rootMarkers = { 'rome.json', 'biome.json', 'package.json', 'Biomefile' },
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+    rootMarkers = { 'rome.json', 'biome.json', 'package.json', 'Biomefile' },
+  }
+end)

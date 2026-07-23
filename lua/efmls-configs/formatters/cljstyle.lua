@@ -4,10 +4,12 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'cljstyle'
-local command = string.format('%s pipe', fs.executable(formatter))
+return nx.async(function()
+  local formatter = 'cljstyle'
+  local command = string.format('%s pipe', nx.await(fs.executable(formatter)))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

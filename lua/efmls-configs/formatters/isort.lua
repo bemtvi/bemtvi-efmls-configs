@@ -4,16 +4,18 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'isort'
-local command = string.format('%s --quiet -', fs.executable(formatter))
+return nx.async(function()
+  local formatter = 'isort'
+  local command = string.format('%s --quiet -', nx.await(fs.executable(formatter)))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-  rootMarkers = {
-    '.isort.cfg',
-    'pyproject.toml',
-    'setup.cfg',
-    'setup.py',
-  },
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+    rootMarkers = {
+      '.isort.cfg',
+      'pyproject.toml',
+      'setup.cfg',
+      'setup.py',
+    },
+  }
+end)

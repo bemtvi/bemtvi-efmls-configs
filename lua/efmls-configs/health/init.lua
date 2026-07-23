@@ -1,51 +1,34 @@
+-- Native port of the `:checkhealth efmls-configs` report. nxvim has no
+-- `vim.health` provider surface, so this reports the tool-resolution results that
+-- `efmls-configs.fs.executable` accumulated into `_G._efmls.healthcheck` — each
+-- bundled linter/formatter that was found on `$PATH` (or a project-local bin dir),
+-- and each that was missing — through `nx.notify`. Surfaced to users as
+-- `:EfmlsHealth` (registered by `nxvim-efmls-configs`).
+
 local M = {}
 
----Report ok message to :checkhealth support only for nvim >= 0.7
----@param msg string
----@return nil
-local function report_ok(msg)
-  if vim.fn.has('nvim-0.10') == 1 then
-    vim.health.ok(msg)
-  elseif vim.fn.has('nvim-0.8') == 1 then
-    vim.health.report_ok(msg)
-  elseif vim.fn.has('nvim-0.7') == 1 then
-    require('health').report_ok(msg)
-  end
+local function healthcheck()
+  return _G._efmls and _G._efmls.healthcheck or { errors = {}, ok = {} }
 end
 
----Report error message to :checkhealth support only for nvim >= 0.7
----@param msg string
----@return nil
-local function report_error(msg)
-  if vim.fn.has('nvim-0.10') == 1 then
-    vim.health.error(msg)
-  elseif vim.fn.has('nvim-0.8') == 1 then
-    vim.health.report_error(msg)
-  elseif vim.fn.has('nvim-0.7') == 1 then
-    require('health').report_error(msg)
-  end
-end
-
-local function has_errors()
-  return _G._efmls and not vim.tbl_isempty(_G._efmls.healthcheck.errors)
-end
-
-local function has_ok()
-  return _G._efmls and not vim.tbl_isempty(_G._efmls.healthcheck.ok)
-end
-
+---Report the accumulated linter/formatter resolution status through `nx.notify`,
+---and return it as `{ ok = string[], errors = string[] }`.
+---@return { ok: string[], errors: string[] }
 function M.check()
-  if has_errors() then
-    for _, err in pairs(_G._efmls.healthcheck.errors) do
-      report_error(err)
-    end
+  local hc = healthcheck()
+
+  for _, err in ipairs(hc.errors) do
+    nx.notify('[efmls-configs] ' .. err, 'error')
+  end
+  for _, ok in ipairs(hc.ok) do
+    nx.notify('[efmls-configs] ' .. ok, 'info')
   end
 
-  if has_ok() then
-    for _, ok in pairs(_G._efmls.healthcheck.ok) do
-      report_ok(ok)
-    end
+  if #hc.errors == 0 and #hc.ok == 0 then
+    nx.notify('[efmls-configs] no linters/formatters configured yet — call setup() first', 'warn')
   end
+
+  return { ok = hc.ok, errors = hc.errors }
 end
 
 return M

@@ -4,28 +4,30 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'prettier'
-local command = string.format(
-  "%s --stdin --stdin-filepath '${INPUT}' ${--range-start:charStart} ${--range-end:charEnd} --config-precedence prefer-file",
-  fs.executable(formatter, fs.Scope.NODE)
-)
+return nx.async(function()
+  local formatter = 'prettier'
+  local command = string.format(
+    "%s --stdin --stdin-filepath '${INPUT}' ${--range-start:charStart} ${--range-end:charEnd} --config-precedence prefer-file",
+    nx.await(fs.executable(formatter, fs.Scope.NODE))
+  )
 
-return {
-  formatCanRange = true,
-  formatCommand = command,
-  formatStdin = true,
-  rootMarkers = {
-    '.prettierrc',
-    '.prettierrc.json',
-    '.prettierrc.js',
-    '.prettierrc.yml',
-    '.prettierrc.yaml',
-    '.prettierrc.json5',
-    '.prettierrc.mjs',
-    '.prettierrc.cjs',
-    '.prettierrc.toml',
-    'prettier.config.js',
-    'prettier.config.cjs',
-    'prettier.config.mjs',
-  },
-}
+  return {
+    formatCanRange = true,
+    formatCommand = command,
+    formatStdin = true,
+    rootMarkers = {
+      '.prettierrc',
+      '.prettierrc.json',
+      '.prettierrc.js',
+      '.prettierrc.yml',
+      '.prettierrc.yaml',
+      '.prettierrc.json5',
+      '.prettierrc.mjs',
+      '.prettierrc.cjs',
+      '.prettierrc.toml',
+      'prettier.config.js',
+      'prettier.config.cjs',
+      'prettier.config.mjs',
+    },
+  }
+end)

@@ -5,15 +5,17 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'flake8'
-local command = string.format('%s -', fs.executable(linter))
+return nx.async(function()
+  local linter = 'flake8'
+  local command = string.format('%s -', nx.await(fs.executable(linter)))
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintIgnoreExitCode = true,
-  lintStdin = true,
-  lintFormats = { 'stdin:%l:%c: %t%n %m' },
-  rootMarkers = { 'setup.cfg', 'tox.ini', '.flake8' },
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintIgnoreExitCode = true,
+    lintStdin = true,
+    lintFormats = { 'stdin:%l:%c: %t%n %m' },
+    rootMarkers = { 'setup.cfg', 'tox.ini', '.flake8' },
+  }
+end)

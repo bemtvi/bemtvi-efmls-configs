@@ -5,14 +5,16 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'mcs'
-local command = string.format('%s -unsafe --parse "${INPUT}"', fs.executable(linter))
+return nx.async(function()
+  local linter = 'mcs'
+  local command = string.format('%s -unsafe --parse "${INPUT}"', nx.await(fs.executable(linter)))
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintStdin = false,
-  lintFormats = { '%.%#(%l,%c): %trror %m', '%.%#(%l,%c): %tarning %m' },
-  rootMarkers = {},
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintStdin = false,
+    lintFormats = { '%.%#(%l,%c): %trror %m', '%.%#(%l,%c): %tarning %m' },
+    rootMarkers = {},
+  }
+end)

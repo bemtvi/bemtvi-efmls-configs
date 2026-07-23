@@ -4,17 +4,19 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'ruff'
-local args = "format --no-cache --stdin-filename '${INPUT}'"
-local command = string.format('%s %s', fs.executable(formatter), args)
+return nx.async(function()
+  local formatter = 'ruff'
+  local args = "format --no-cache --stdin-filename '${INPUT}'"
+  local command = string.format('%s %s', nx.await(fs.executable(formatter)), args)
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-  rootMarkers = {
-    'pyproject.toml',
-    'setup.py',
-    'requirements.txt',
-    'ruff.toml',
-  },
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+    rootMarkers = {
+      'pyproject.toml',
+      'setup.py',
+      'requirements.txt',
+      'ruff.toml',
+    },
+  }
+end)

@@ -5,15 +5,17 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'chktex'
-local command = string.format('%s -q -v0', fs.executable(linter))
+return nx.async(function()
+  local linter = 'chktex'
+  local command = string.format('%s -q -v0', nx.await(fs.executable(linter)))
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintStdin = true,
-  lintCommand = command,
-  lintIgnoreExitCode = true,
-  lintFormats = { '%f:%l:%c:%n:%m' },
-  lintSeverity = 2,
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintStdin = true,
+    lintCommand = command,
+    lintIgnoreExitCode = true,
+    lintFormats = { '%f:%l:%c:%n:%m' },
+    lintSeverity = 2,
+  }
+end)

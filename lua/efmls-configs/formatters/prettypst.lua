@@ -4,9 +4,11 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = fs.executable('prettypst')
-local command = string.format('%s --use-std-in --use-std-out', fs.executable(formatter))
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+return nx.async(function()
+  local formatter = nx.await(fs.executable('prettypst'))
+  local command = string.format('%s --use-std-in --use-std-out', nx.await(fs.executable(formatter)))
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

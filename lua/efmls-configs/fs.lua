@@ -1,13 +1,18 @@
+-- Binary resolution for the bundled linter/formatter configs — fully async, native.
+--
+-- Neovim's efmls-configs resolved each tool binary *synchronously* at module load
+-- (`vim.fn.executable`/`exepath`/`filereadable` + blocking `vim.loop`). nxvim has no
+-- blocking filesystem access from Lua — every fs op is an async `nx.fs.*` promise —
+-- so `fs.executable` is async too: it returns a PROMISE of the resolved path, over
+-- `nx.fs.exists`. Each preset is therefore an `nx.async` factory that awaits its
+-- binaries while building its command; `nxvim-efmls-configs.setup` awaits the whole
+-- set (in parallel) before handing the languages map to efm-langserver.
+--
+-- In a remote/daemon session the `nx.fs` ops route to the daemon host, so tools are
+-- resolved on the machine efm actually runs on — the resolution is correct there,
+-- not merely on the editor's box.
+
 local M = {}
-
--- TODO:
--- Add implementation to find the relevant linter/formatter binary
--- by traversing down each parent dir and match with FilepathByScope var
--- for the supported language package managers in Scope.
-
--- TODO:
--- Add python virtual env support (venv), automatically detect the venv
--- folder and then use the tools within it. Related with the todo above.
 
 ---@alias ScopeType
 ---| 'BUNDLE'
@@ -26,80 +31,85 @@ local FilepathByScope = {
   BUNDLE = 'vendor/bundle',
 }
 
----Get local executable based on scope, if present.
----@param binary string
----@param context string
----@return string
-local function local_executable(binary, context)
-  local relativepath = FilepathByScope[context]
-  local binarypath = string.format('%s/%s/%s', vim.loop.cwd(), relativepath, binary)
+-- Platform sniff (a `package.config` constant — no IO). nxvim has no native win32
+-- target, so this is `false` in practice; kept so the handful of tool configs that
+-- branch on it read the same as upstream.
+M.is_windows = package.config:sub(1, 1) == '\\'
+local PATHSEP = M.is_windows and ';' or ':'
 
-  if vim.fn.filereadable(binarypath) == 0 then
-    error(string.format('%q: No local executable found, check |efmls-configs-issues| for help', binary), 0)
-  end
+-- ----- health accumulator (surfaced by :EfmlsHealth) -------------------------
 
-  return binarypath
+local function healthcheck()
+  _G._efmls = _G._efmls or { healthcheck = { errors = {}, ok = {} } }
+  return _G._efmls.healthcheck
 end
 
----Get global executable, if present.
----@param binary string
----@return string
-local function global_executable(binary)
-  if vim.fn.executable(binary) == 0 then
-    error(string.format('%q: No global executable found, check |efmls-configs-issues| for help', binary), 0)
-  end
-
-  return vim.fn.exepath(binary)
+---Start a fresh health report. Called by `setup()` before it resolves a config, so
+---`:EfmlsHealth` reflects the current resolution rather than accumulating stale runs.
+M.reset_health = function()
+  _G._efmls = { healthcheck = { errors = {}, ok = {} } }
 end
 
----Get binary path, first from project-local then from
----global paths otherwise. Report to :checkhealth if
----found or not.
+-- ----- async resolution ------------------------------------------------------
+
+---Resolve `name` on the host `$PATH` to a full path, or `nil` if not found. When
+---`name` is already a path (contains a separator) it is checked as-is. Async: returns
+---a promise; await it inside an `nx.async` context.
 ---@param name string
----@param context ScopeType
-M.executable = function(name, context)
-  -- Track linter/formatter status
-  if _G._efmls == nil then
-    _G._efmls = { healthcheck = { errors = {}, ok = {} } }
+---@return string|nil promise
+M.which = nx.async(function(name)
+  if name:find('/', 1, true) then
+    return nx.await(nx.fs.exists(name)) and name or nil
   end
 
-  local local_ok, local_binarypath, global_ok, global_binarypath
-
-  if context then
-    -- get info from local path
-    local_ok, local_binarypath = pcall(local_executable, name, context)
+  local path = vim.env.PATH or ''
+  for dir in string.gmatch(path, '([^' .. PATHSEP .. ']+)') do
+    local candidate = dir .. '/' .. name
+    if nx.await(nx.fs.exists(candidate)) then
+      return candidate
+    end
   end
 
-  -- if that fails then get from global
-  global_ok, global_binarypath = pcall(global_executable, name)
+  return nil
+end)
 
-  if not global_ok and not local_ok then
-    local reason = local_binarypath
-    table.insert(_G._efmls.healthcheck.errors, reason)
+---True when `name` resolves on `$PATH` (or is a readable path). Async — used by tool
+---configs that branch on the presence of a helper binary (e.g. `xargs`).
+---@param name string
+---@return boolean promise
+M.has_executable = nx.async(function(name)
+  return nx.await(M.which(name)) ~= nil
+end)
 
-    reason = global_binarypath
-    table.insert(_G._efmls.healthcheck.errors, reason)
+---Resolve a tool binary — the project-local scope dir first (npm/composer/bundler
+---bin), then the global `$PATH` — recording the outcome for `:EfmlsHealth`. Async:
+---returns a promise of the resolved path, or the bare `name` on a miss (so efm's own
+---shell can still try it). Await it inside an `nx.async` preset.
+---@param name string
+---@param context? ScopeType
+---@return string promise
+M.executable = nx.async(function(name, context)
+  local hc = healthcheck()
 
-    return name
+  -- project-local (node_modules/.bin, vendor/bin, …)
+  local rel = context and FilepathByScope[context]
+  if rel then
+    local candidate = string.format('%s/%s/%s', vim.fn.getcwd(), rel, name)
+    if nx.await(nx.fs.exists(candidate)) then
+      table.insert(hc.ok, string.format('%q: found at %s', name, candidate))
+      return candidate
+    end
   end
 
-  if local_ok then
-    table.insert(_G._efmls.healthcheck.ok, string.format('%q: Found at %s', name, local_binarypath))
-
-    return local_binarypath
+  -- global $PATH
+  local resolved = nx.await(M.which(name))
+  if resolved then
+    table.insert(hc.ok, string.format('%q: found at %s', name, resolved))
+    return resolved
   end
 
-  table.insert(_G._efmls.healthcheck.ok, string.format('%q: Found at %s', name, global_binarypath))
-
-  return global_binarypath
-end
-
-M.get_plugin_path = function()
-  local matches = vim.tbl_filter(function(path)
-    return string.match(path, 'efmls%-configs')
-  end, vim.api.nvim_list_runtime_paths())
-
-  return vim.tbl_isempty(matches) and '' or matches[1]
-end
+  table.insert(hc.errors, string.format('%q: no executable found on $PATH', name))
+  return name
+end)
 
 return M

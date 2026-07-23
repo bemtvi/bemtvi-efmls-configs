@@ -1,0 +1,3 @@
+# The demo sample is deliberately messy — it exists to be reformatted by efm/stylua
+# when you run the example, so it must not be pre-formatted.
+examples/sample.lua

@@ -5,14 +5,16 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'php'
-local command = string.format('%s -l', fs.executable(linter))
+return nx.async(function()
+  local linter = 'php'
+  local command = string.format('%s -l', nx.await(fs.executable(linter)))
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintStdin = true,
-  lintFormats = { '%m in %.%# line %l' },
-  rootMarkers = { 'composer.json' },
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintStdin = true,
+    lintFormats = { '%m in %.%# line %l' },
+    rootMarkers = { 'composer.json' },
+  }
+end)

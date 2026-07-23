@@ -4,16 +4,18 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'dprint'
-local command = string.format("%s fmt --stdin '${INPUT}'", fs.executable(formatter, fs.Scope.NODE))
+return nx.async(function()
+  local formatter = 'dprint'
+  local command = string.format("%s fmt --stdin '${INPUT}'", nx.await(fs.executable(formatter, fs.Scope.NODE)))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-  rootMarkers = {
-    'dprint.json',
-    'dprint.jsonc',
-    '.dprint.json',
-    '.dprint.jsonc',
-  },
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+    rootMarkers = {
+      'dprint.json',
+      'dprint.jsonc',
+      '.dprint.json',
+      '.dprint.jsonc',
+    },
+  }
+end)

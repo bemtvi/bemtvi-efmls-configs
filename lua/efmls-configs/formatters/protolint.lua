@@ -4,14 +4,16 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'protolint'
-local command = string.format("%s lint -fix '${INPUT}'", fs.executable(formatter))
+return nx.async(function()
+  local formatter = 'protolint'
+  local command = string.format("%s lint -fix '${INPUT}'", nx.await(fs.executable(formatter)))
 
-return {
-  formatCommand = command,
-  formatStdin = false,
-  rootMarkers = {
-    '.protolint.yaml',
-    '.protolint.yml',
-  },
-}
+  return {
+    formatCommand = command,
+    formatStdin = false,
+    rootMarkers = {
+      '.protolint.yaml',
+      '.protolint.yml',
+    },
+  }
+end)

@@ -4,15 +4,17 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'djlint'
-local args = '--reformat -'
-local command = string.format('%s %s', fs.executable(formatter), args)
+return nx.async(function()
+  local formatter = 'djlint'
+  local args = '--reformat -'
+  local command = string.format('%s %s', nx.await(fs.executable(formatter)), args)
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-  rootMarkers = {
-    '.djlintrc',
-    'pyproject.toml',
-  },
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+    rootMarkers = {
+      '.djlintrc',
+      'pyproject.toml',
+    },
+  }
+end)

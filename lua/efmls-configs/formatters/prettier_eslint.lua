@@ -4,10 +4,13 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'prettier-eslint'
-local command = string.format("%s --stdin --stdin-filepath '${INPUT}'", fs.executable(formatter, fs.Scope.NODE))
+return nx.async(function()
+  local formatter = 'prettier-eslint'
+  local command =
+    string.format("%s --stdin --stdin-filepath '${INPUT}'", nx.await(fs.executable(formatter, fs.Scope.NODE)))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

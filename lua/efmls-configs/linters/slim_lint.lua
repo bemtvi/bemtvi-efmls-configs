@@ -5,14 +5,16 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'slim-lint'
-local command = string.format('%s --stdin-file-path "${INPUT}"', fs.executable(linter, fs.Scope.BUNDLE))
+return nx.async(function()
+  local linter = 'slim-lint'
+  local command = string.format('%s --stdin-file-path "${INPUT}"', nx.await(fs.executable(linter, fs.Scope.BUNDLE)))
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintStdin = true,
-  lintFormats = { '%f:%l [%t] %m' },
-  rootMarkers = {},
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintStdin = true,
+    lintFormats = { '%f:%l [%t] %m' },
+    rootMarkers = {},
+  }
+end)

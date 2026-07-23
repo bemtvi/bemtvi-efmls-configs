@@ -1,22 +1,25 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'perlcritic'
-local command = string.format('%s --nocolor --verbose "%s" "${INPUT}"', fs.executable(linter), [[%l:%c:%s %m [%p]\n]])
+return nx.async(function()
+  local linter = 'perlcritic'
+  local command =
+    string.format('%s --nocolor --verbose "%s" "${INPUT}"', nx.await(fs.executable(linter)), [[%l:%c:%s %m [%p]\n]])
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintIgnoreExitCode = true,
-  lintStdin = true,
-  lintFormats = { '%l:%c:%t %m' },
-  lintCategoryMap = {
-    ['1'] = 'N',
-    ['2'] = 'N',
-    ['3'] = 'I',
-    ['4'] = 'W',
-    ['5'] = 'E',
-  },
-  rootMarkers = { '.git', '.perlcriticrc' },
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintIgnoreExitCode = true,
+    lintStdin = true,
+    lintFormats = { '%l:%c:%t %m' },
+    lintCategoryMap = {
+      ['1'] = 'N',
+      ['2'] = 'N',
+      ['3'] = 'I',
+      ['4'] = 'W',
+      ['5'] = 'E',
+    },
+    rootMarkers = { '.git', '.perlcriticrc' },
+  }
+end)

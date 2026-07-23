@@ -4,12 +4,14 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'deno'
-local args = 'fmt - --ext ${FILEEXT}'
+return nx.async(function()
+  local formatter = 'deno'
+  local args = 'fmt - --ext ${FILEEXT}'
 
-local command = string.format('%s %s', fs.executable(formatter), args)
+  local command = string.format('%s %s', nx.await(fs.executable(formatter)), args)
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

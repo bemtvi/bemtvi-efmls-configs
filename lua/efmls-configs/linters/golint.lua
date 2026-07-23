@@ -5,14 +5,16 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'golint'
-local command = string.format('%s -', fs.executable(linter))
+return nx.async(function()
+  local linter = 'golint'
+  local command = string.format('%s -', nx.await(fs.executable(linter)))
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintStdin = true,
-  lintFormats = { '%.%#:%l:%c: %m' },
-  rootMarkers = {},
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintStdin = true,
+    lintFormats = { '%.%#:%l:%c: %m' },
+    rootMarkers = {},
+  }
+end)

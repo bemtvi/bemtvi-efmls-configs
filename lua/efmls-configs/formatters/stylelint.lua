@@ -4,12 +4,14 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'stylelint'
-local args = '--fix --stdin'
-local command = string.format('%s %s', fs.executable(formatter, fs.Scope.NODE), args)
+return nx.async(function()
+  local formatter = 'stylelint'
+  local args = '--fix --stdin'
+  local command = string.format('%s %s', nx.await(fs.executable(formatter, fs.Scope.NODE)), args)
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-  rootMarkers = { '.stylelintrc', '.stylelintrc.json', '.stylelintrc.yml', '.stylelintrc.yaml' },
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+    rootMarkers = { '.stylelintrc', '.stylelintrc.json', '.stylelintrc.yml', '.stylelintrc.yaml' },
+  }
+end)

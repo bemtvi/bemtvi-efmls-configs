@@ -1,203 +1,165 @@
-# efmls-configs-nvim
+# nxvim-efmls-configs
 
-<a href="https://dotfyle.com/plugins/creativenull/efmls-configs-nvim">
-  <img src="https://dotfyle.com/plugins/creativenull/efmls-configs-nvim/shield" alt="Configs on dotfyle">
-</a>
+Ready-made [`efm-langserver`][efm-langserver] configurations for
+[nxvim](https://github.com/davidrios/nxvim) — a native port of
+[efmls-configs-nvim](https://github.com/creativenull/efmls-configs-nvim).
 
-An unofficial collection of linters and formatters configured for [efm-langserver][efm-langserver] for neovim.
+efm-langserver is a general-purpose language server that runs ordinary linters and
+formatters (eslint, stylua, black, luacheck, …) and speaks their results back over
+LSP. This plugin ships a curated config table for each of ~150 such tools, plus a
+one-call `setup()` that assembles them into an efm `languages` map and drives it onto
+nxvim's own [`nx.lsp`](https://github.com/davidrios/nxvim) control surface.
+
+There is **no neovim compatibility layer** — `efm-langserver` is just an LSP server
+nxvim spawns, and each preset is plain data (`lintCommand` / `formatCommand` / root
+markers) the engine understands directly. Everything is **async and native**: tool
+binaries are resolved over `nx.fs` (nxvim has no blocking Lua filesystem access), so
+`setup()` returns a promise that fulfils once efm is configured and enabled.
+
+> This plugin only *configures* tools; it does not install them. Install
+> [`efm-langserver`][efm-langserver] and the linters/formatters you want yourself. A
+> missing binary is reported by `:EfmlsHealth` and simply isn't run — nxvim never
+> pretends a tool that isn't there is working.
 
 ## Supported linters and formatters
 
-[doc/SUPPORTED_LIST.md](./doc/SUPPORTED_LIST.md)
+See [doc/SUPPORTED_LIST.md](./doc/SUPPORTED_LIST.md). Every preset lives under
+`efmls-configs.linters.<name>` / `efmls-configs.formatters.<name>` and is a plain
+`require`-able table.
 
-## Features
+## Install
 
-- Out-of-box configurations for 90+ tools (linters and formatters)
-- Intelligently detect tools installed project-wide or system-wide - works only for node/npm, php/composer and
-  ruby/bundler (additional support for other build tools coming soon, welcome any contributions)
-- `:checkhealth` integration for status check
-
-## Documentation
-
-Documentation can be accessed via [`:help efmls-configs`](./doc/efmls-configs.txt) or [further below](#setup).
-
-## Requirements
-
-- [Neovim >= 0.7][neovim]
-- [efm-langserver][efm-langserver] installed globally. If using [mason.nvim](https://github.com/williamboman/mason.nvim)
-  then install with `:MasonInstall efm`.
-
-## Installation
-
-Install with your favorite plugin manager or just use builtin packages.
-
-### lazy.nvim
+Declare it with the built-in `:Plugins` manager in your `init.lua`. Loading is **lazy
+and per-language** — you set efm's global options once, then load each language when a
+buffer of that type is opened, via a `FileType` autocmd:
 
 ```lua
-{
-  'creativenull/efmls-configs-nvim',
-  version = 'v1.x.x', -- version is optional, but recommended
-  dependencies = { 'neovim/nvim-lspconfig' }, -- not required if using nvim >= 0.11
-}
-```
+nx.plugins({
+  {
+    "nxvim/nxvim-efmls-configs",
+    config = function()
+      local efmls = require("nxvim-efmls-configs")
 
-### vim-plug
+      -- efm's global options (all optional).
+      efmls.setup({ root_markers = { ".git/" } })
 
-```vim
-Plug 'neovim/nvim-lspconfig' " not required if using nvim >= 0.11
-Plug 'creativenull/efmls-configs-nvim', { 'tag': 'v1.*' } " tag is optional, but recommended
-```
-
-## Setup
-
-See also `:help efmls-configs-setup` to view docs inside neovim.
-
-To get started, make a `languages` table that will define configurations for the language of your choice. Or use the
-defaults provided by this plugin.
-
-```lua
--- Register linters and formatters per language
-local eslint = require('efmls-configs.linters.eslint')
-local prettier = require('efmls-configs.formatters.prettier')
-local stylua = require('efmls-configs.formatters.stylua')
-local languages = {
-  typescript = { eslint, prettier },
-  lua = { stylua },
-}
-
--- Or use the defaults provided by this plugin
--- check doc/SUPPORTED_LIST.md for the supported languages
---
--- local languages = require('efmls-configs.defaults').languages()
-
-local efmls_config = {
-  filetypes = vim.tbl_keys(languages),
-  settings = {
-    rootMarkers = { '.git/' },
-    languages = languages,
-  },
-  init_options = {
-    documentFormatting = true,
-    documentRangeFormatting = true,
-  },
-}
-
--- If using nvim >= 0.11 then use the following
-vim.lsp.config('efm', vim.tbl_extend('force', efmls_config, {
-  cmd = { 'efm-langserver' },
-
-  -- Pass your custom lsp config below like on_attach and capabilities
-  --
-  -- on_attach = on_attach,
-  -- capabilities = capabilities,
-}))
-
--- If using nvim <= 0.10 then use the following
-require('lspconfig').efm.setup(vim.tbl_extend('force', efmls_config, {
-  -- Pass your custom lsp config below like on_attach and capabilities
-  --
-  -- on_attach = on_attach,
-  -- capabilities = capabilities,
-}))
-```
-
-### Default Configurations
-
-See also `:help efmls-configs-defaults` to view docs inside neovim.
-
-Default configurations are an opt-in feature. To see all the configurations provided by default go to
-[`doc/SUPPORTED_LIST.md`](./doc/SUPPORTED_LIST.md).
-
-You can use a list of defaults provided by this plugin, in-case you don't want to specify configuration for each
-language.
-
-```lua
-local languages = require('efmls-configs.defaults').languages()
-```
-
-To add additional tools which are not provided by default you can extend via `vim.tbl_extend()`. This can also be used
-as a way to override defaults.
-
-```lua
-local languages = require('efmls-configs.defaults').languages()
-languages = vim.tbl_extend('force', languages, {
-  -- Custom languages, or override existing ones
-  html = {
-    require('efmls-configs.formatters.prettier'),
+      -- Load lua tools only when a lua buffer is opened.
+      nx.autocmd.create("FileType", {
+        pattern = "lua",
+        callback = function()
+          efmls.load("lua", {
+            require("efmls-configs.linters.luacheck"),
+            require("efmls-configs.formatters.stylua"),
+          })
+        end,
+      })
+    end,
   },
 })
 ```
 
-### Tips and Tricks
+Run `:PluginSync` to clone it. Open a file of a loaded type and, if `efm-langserver`
+and the tools are installed, efm attaches. Nothing is resolved until the first buffer
+of a given filetype opens — a tool's binary is looked up (over `nx.fs`) only when it
+is actually needed.
 
-#### Format on save
+## Usage
 
-There are couple ways you can format your code on save.
+### `load(ft, tools[, opts])` — the async, on-demand loader
 
-1. Register an autocmd to run format on save:
+Resolves `tools` (a list of async presets from `efmls-configs.linters.*` /
+`efmls-configs.formatters.*`) for filetype `ft`, registers them with efm, and enables
+it. Async: returns a promise of the resolved config list. Loads at most once per
+filetype (repeat/concurrent triggers share the one resolution); pass
+`{ force = true }` to re-resolve and replace a filetype's tools. Call it from a
+`FileType` autocmd (as in Install) so a language loads exactly when it's opened.
+
+### `setup({ … })` — efm's global options
+
+Synchronous. Sets efm's server-wide options; it does **not** resolve any language —
+that is `load()`'s job.
 
 ```lua
-local lsp_fmt_group = vim.api.nvim_create_augroup('LspFormattingGroup', {})
-vim.api.nvim_create_autocmd('BufWritePost', {
-  group = lsp_fmt_group,
-  callback = function(ev)
-    local efm = vim.lsp.get_active_clients({ name = 'efm', bufnr = ev.buf })
+require("nxvim-efmls-configs").setup({
+  -- The efm-langserver command (default { "efm-langserver" }).
+  command = { "efm-langserver" },
 
-    if vim.tbl_isempty(efm) then
-      return
-    end
+  -- Advertise document / range formatting (both default true).
+  formatting = true,
+  range_formatting = true,
 
-    vim.lsp.buf.format({ name = 'efm' })
-  end,
+  -- Project-root markers efm uses to locate a workspace (default { ".git/" }).
+  root_markers = { ".git/", ".luacheckrc", "stylua.toml" },
+
+  -- Run when efm attaches to a buffer, and client capabilities to broadcast.
+  on_attach = function(client, bufnr) end,
+  capabilities = {},
+
+  -- CONVENIENCE: registers a FileType autocmd per language that lazily load()s it on
+  -- first open — still on-demand, never eager. Equivalent to writing the autocmds
+  -- yourself. Pass the string "*defaults" to lazy-wire the bundled default set.
+  languages = {
+    lua = { require("efmls-configs.formatters.stylua") },
+    python = { require("efmls-configs.linters.flake8") },
+  },
 })
 ```
 
-2. If you do not want to write and maintain the code above, then you can rely on a plugin like
-   [lukas-reineke/lsp-format.nvim][lsp-format] which makes it easier to format on save.
+Lazy-wire the bundled default set (lua, python, go, js/ts, css, html, php, ruby, …),
+each language still resolving only when its first buffer opens:
 
-## Troubleshooting
+```lua
+require("nxvim-efmls-configs").setup({ languages = "*defaults" })
+```
 
-See also `:help efmls-configs-issues` to view docs inside neovim.
+### Formatting a buffer
 
-Always run `:checkhealth` to see if there are any issue, when you get no response from the linter or formatter as you
-expected.
+efm formatting rides nxvim's native LSP verbs. Bind one:
 
-If you get "no executable found" issues in `:checkhealth`, this means that the linter or formatter was not found in the
-provided filepath. Ensure that it is installed globally or in a valid filepath.
+```lua
+nx.keymap.set("n", "<leader>lf", nx.lsp.format, { desc = "Format with efm" })
+```
 
-For nodejs/npm, php/composer, ruby/bundler: check if the linter or formatter is installed in your node_modules (npm),
-vendor (composer/bundler) project folder, or installed globally.
+### The library (native path)
 
-### Mason setup issue (`:help efmls-configs-mason`)
+You don't have to use `setup()`. Each preset is an async factory, so you can await
+them and drive `nx.lsp` directly, building the `languages` map yourself — see the
+presets under `efmls-configs.linters.*` / `efmls-configs.formatters.*` and
+`require("efmls-configs.defaults").languages()` for the default (factory) map.
+Remember to await each: `local cfg = nx.await(require("efmls-configs.formatters.stylua")())`.
 
-If you use mason, then you don't need to add anything extra for efmls-configs for it to work. But if you are having
-problems setting up then check the following:
+### `:EfmlsHealth`
 
-1. Make sure you call mason `setup()` before `vim.lsp.config('efm', {...})` (if using nvim 0.10 and below, then make
-   sure it's before lspconfig `setup()`)
-2. Run `:!which <tool>` to check if the path is provided by mason
+Reports which tool binaries have been resolved so far (as languages are loaded) and
+which were missing — the async analogue of neovim's `:checkhealth efmls-configs`. Also
+available as `require("nxvim-efmls-configs").health()`.
 
-## Alternatives
+## Notes on the port
 
-- ALE - [https://github.com/dense-analysis/ale](https://github.com/dense-analysis/ale)
-- diagnostic-languageserver -
-  [https://github.com/iamcco/diagnostic-languageserver](https://github.com/iamcco/diagnostic-languageserver)
-- guard.nvim - [https://github.com/nvimdev/guard.nvim](https://github.com/nvimdev/guard.nvim)
-- nvim-lint - [https://github.com/mfussenegger/nvim-lint](https://github.com/mfussenegger/nvim-lint)
-- formatter.nvim - [https://github.com/mhartington/formatter.nvim](https://github.com/mhartington/formatter.nvim)
+- **Lazy async factories.** Upstream resolved each tool binary synchronously at module
+  load and returned a config table. nxvim forbids blocking Lua fs, so each preset is
+  instead an `nx.async` factory — `require("efmls-configs.linters.eslint")` returns a
+  **function** that, when called, returns a promise of the config table. Nothing is
+  resolved until `load(ft, …)` asks for a specific language, which awaits that
+  language's factories (in parallel) and grows efm's `languages` map by one entry. If
+  you consume a preset directly, call and await it: `local cfg = nx.await(preset())`.
+- **Binary resolution** runs over `nx.fs.exists` (`fs.executable` is async). A tool
+  that can't be found falls back to its bare name (so efm's own shell can still try
+  it) and is flagged in `:EfmlsHealth`. Project-local tools (npm `node_modules/.bin`,
+  composer `vendor/bin`, bundler `vendor/bundle`) are preferred over the global
+  `$PATH` when present, exactly as upstream.
+- **Version/file probes** that upstream ran synchronously are now real async: the
+  golangci-lint version check runs over `nx.run`, and rustfmt reads `Cargo.toml` for
+  its edition over `nx.fs` — no shell trickery, no blocking.
 
-## Credits
+## Development
 
-Credits goes to the following projects for inspiration:
+The plugin carries a Lua test suite (`test/*_spec.lua`) on nxvim's native `nx.test`
+harness, including an end-to-end spec that formats a buffer through a **real**
+`efm-langserver` + `stylua` subprocess. Run it from a checkout with:
 
-- [efm-langserver][efm-langserver] for this awesome language server to provide an interface to run linters/formatters
-  through a LSP protocol
-- [ALE][ale] for a huge list of linters/formatters to look through and add them in here
+```sh
+nxvim --test-plugin .
+```
 
 [efm-langserver]: https://github.com/mattn/efm-langserver
-[schema-file]: https://github.com/mattn/efm-langserver/blob/master/schema.json
-[ale]: https://github.com/dense-analysis/ale
-[nvim-lsp]: https://neovim.io/doc/user/lsp.html
-[neovim]: https://github.com/neovim/neovim
-[lspconfig]: https://github.com/neovim/nvim-lspconfig
-[lsp-format]: https://github.com/lukas-reineke/lsp-format.nvim

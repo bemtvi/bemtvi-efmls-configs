@@ -5,14 +5,16 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-local linter = 'vale'
-local command = string.format('%s --output=line ${INPUT}', fs.executable(linter))
+return nx.async(function()
+  local linter = 'vale'
+  local command = string.format('%s --output=line ${INPUT}', nx.await(fs.executable(linter)))
 
-return {
-  prefix = linter,
-  lintSource = sourceText(linter),
-  lintCommand = command,
-  lintStdin = false,
-  lintFormats = { '%f:%l:%c:%m' },
-  rootMarkers = { '.vale.ini' },
-}
+  return {
+    prefix = linter,
+    lintSource = sourceText(linter),
+    lintCommand = command,
+    lintStdin = false,
+    lintFormats = { '%f:%l:%c:%m' },
+    rootMarkers = { '.vale.ini' },
+  }
+end)

@@ -1,58 +1,56 @@
--- Defaults as defined in: doc/SUPPORTED_LIST.md
-local lspconfig_ok, lspconfig = pcall(require, 'lspconfig')
-if not lspconfig_ok then
-  local errmsg = '[efmls-configs] `nvim-lspconfig` plugin is required! Please install via your plugin manager.'
-  vim.api.nvim_err_writeln(errmsg)
-  return
-end
+-- The default linter/formatter set per language (mirrors doc/SUPPORTED_LIST.md).
+--
+-- Native port: upstream read `defaults.json` off disk at call time (`io.open` +
+-- `vim.json.decode`). nxvim has no blocking Lua fs, so the mapping is inlined here as
+-- data — `M.languages()` stays synchronous, collecting each tool preset through
+-- `require`. Each preset is an `nx.async` factory (`() -> promise` of the efm config
+-- table); `nxvim-efmls-configs.setup` awaits them to build the concrete map.
 
-local fs = require('efmls-configs.fs')
 local M = {}
 
----Get default languages from defaults.json
+-- language -> { linters = {…}, formatters = {…} }, keyed by the module name under
+-- `efmls-configs.linters.*` / `efmls-configs.formatters.*`.
+local DEFAULTS = {
+  { languages = { 'css', 'scss', 'less', 'sass' }, linters = { 'stylelint' }, formatters = { 'prettier' } },
+  {
+    languages = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+    linters = { 'eslint' },
+    formatters = { 'prettier' },
+  },
+  { languages = { 'go' }, linters = { 'golangci_lint' } },
+  { languages = { 'html' }, linters = { 'htmlhint' }, formatters = { 'prettier' } },
+  { languages = { 'lua' }, linters = { 'luacheck' }, formatters = { 'stylua' } },
+  { languages = { 'nix' }, formatters = { 'alejandra' } },
+  { languages = { 'php' }, linters = { 'phpcs' }, formatters = { 'phpcbf' } },
+  { languages = { 'python' }, linters = { 'flake8' }, formatters = { 'autopep8' } },
+  { languages = { 'ruby' }, linters = { 'reek' } },
+  { languages = { 'vim' }, linters = { 'vint' } },
+  { languages = { 'blade' }, formatters = { 'blade_formatter' } },
+  { languages = { 'proto' }, linters = { 'buf' }, formatters = { 'buf' } },
+}
+
+---Default language map: `{ [filetype] = { <async tool factory>, … } }`. Each factory
+---is an `nx.async` function returning a promise of its efm config table; await them
+---(as `setup()` does) to get the concrete `languages` map.
 ---@return table
 function M.languages()
-  local defaults_filepath = string.format('%s/lua/efmls-configs/defaults.json', fs.get_plugin_path())
-  local fp = io.open(defaults_filepath, 'r')
-  if not fp then
-    vim.print('no file', defaults_filepath)
-    return {}
-  end
-
-  local contents = fp:read('*all')
-  fp:close()
-
-  local data_ok, data = pcall(vim.json.decode, contents)
-  if not data_ok then
-    vim.print('no data')
-    return {}
-  end
-
-  local defaults = {}
-  for _, v in pairs(data.defaults) do
-    for _, lv in pairs(v.languages) do
-      local key = string.lower(lv)
-      defaults[key] = {}
-      local linters = {}
-      local formatters = {}
-
-      if v.linters then
-        for _, linter_value in pairs(v.linters) do
-          local config_path = string.format('efmls-configs.linters.%s', linter_value)
-          table.insert(defaults[key], require(config_path))
-        end
+  local languages = {}
+  for _, group in ipairs(DEFAULTS) do
+    for _, lang in ipairs(group.languages) do
+      local key = string.lower(lang)
+      local tools = {}
+      for _, linter in ipairs(group.linters or {}) do
+        -- Parenthesised: nxvim's `require` returns (module, loader) — truncate to the
+        -- module so the loader path does not leak in as a second list element.
+        table.insert(tools, (require('efmls-configs.linters.' .. linter)))
       end
-
-      if v.formatters then
-        for _, formatter_value in pairs(v.formatters) do
-          local config_path = string.format('efmls-configs.formatters.%s', formatter_value)
-          table.insert(defaults[key], require(config_path))
-        end
+      for _, formatter in ipairs(group.formatters or {}) do
+        table.insert(tools, (require('efmls-configs.formatters.' .. formatter)))
       end
+      languages[key] = tools
     end
   end
-
-  return defaults
+  return languages
 end
 
 return M

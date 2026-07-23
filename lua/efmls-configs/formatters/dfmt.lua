@@ -4,10 +4,12 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'dfmt'
-local command = string.format('%s -', fs.executable(formatter))
+return nx.async(function()
+  local formatter = 'dfmt'
+  local command = string.format('%s -', nx.await(fs.executable(formatter)))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)

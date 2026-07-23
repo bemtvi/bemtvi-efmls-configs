@@ -4,10 +4,12 @@
 
 local fs = require('efmls-configs.fs')
 
-local formatter = 'xo'
-local command = string.format('%s --fix --stdin', fs.executable(formatter, fs.Scope.NODE))
+return nx.async(function()
+  local formatter = 'xo'
+  local command = string.format('%s --fix --stdin', nx.await(fs.executable(formatter, fs.Scope.NODE)))
 
-return {
-  formatCommand = command,
-  formatStdin = true,
-}
+  return {
+    formatCommand = command,
+    formatStdin = true,
+  }
+end)
