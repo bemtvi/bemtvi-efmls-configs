@@ -104,16 +104,40 @@ end
 
 -- The actual per-language load: resolve the tool factories (in parallel, over nx.fs),
 -- register the resolved configs under `ft`, and (re)configure the shared efm.
+--
+-- Each tool entry is a preset FACTORY (`require('efmls-configs.linters.eslint')`) or a
+-- raw config table. nxvim's `require` returns TWO values (module, loader-path), and
+-- the loader-path STRING leaks into the final slot of a `{ require(a), require(b) }`
+-- constructor — a pervasive footgun — so those strings are ignored rather than
+-- mistaken for a tool. Anything else (number/boolean/…) is a genuine mistake: loud.
 local do_load = nx.async(function(ft, tools)
-  local promises = {}
-  for _, factory in ipairs(tools) do
-    if type(factory) ~= 'function' then
-      error('nxvim-efmls-configs.load: ' .. tostring(ft) .. ' has a non-function tool entry', 2)
+  local promises = {} -- factories: called, awaited in parallel
+  local ready = {} -- raw config tables: used as-is
+  for _, tool in ipairs(tools) do
+    local kind = type(tool)
+    if kind == 'function' then
+      promises[#promises + 1] = tool()
+    elseif kind == 'table' then
+      ready[#ready + 1] = tool
+    elseif kind ~= 'string' then
+      error(
+        ('nxvim-efmls-configs.load: %s has a %s tool entry (expected a preset factory or config table)'):format(
+          ft,
+          kind
+        ),
+        2
+      )
     end
-    promises[#promises + 1] = factory()
   end
 
-  local configs = nx.await(nx.promise.all(promises))
+  local configs = ready
+  for _, cfg in ipairs(nx.await(nx.promise.all(promises))) do
+    configs[#configs + 1] = cfg
+  end
+  if #configs == 0 then
+    error('nxvim-efmls-configs.load: ' .. tostring(ft) .. ' has no tools', 2)
+  end
+
   local grew = M._languages[ft] == nil
   M._languages[ft] = configs
   if not ft_seen[ft] then

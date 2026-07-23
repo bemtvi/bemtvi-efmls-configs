@@ -25,6 +25,25 @@ nx.test.describe('nxvim-efmls-configs.load', function()
     nx.test.expect(lint).to_match('luacheck')
   end)
 
+  nx.test.it("tolerates require's leaked loader-path (natural { require, require } syntax)", function()
+    -- nxvim's `require` returns (module, loader-path); the final entry in a table
+    -- constructor expands to BOTH, leaking a string into the list. load() must ignore
+    -- it rather than reject it as a "non-function tool entry" (the reported bug).
+    local resolved = nx.await(efmls.load('lua', {
+      require('efmls-configs.linters.luacheck'),
+      require('efmls-configs.formatters.stylua'), -- final slot: also yields a string
+    }, { force = true }))
+    nx.test.expect(#resolved).to_be(2) -- two real tools; the leaked string dropped
+  end)
+
+  nx.test.it('accepts a raw config table as a tool entry', function()
+    local resolved = nx.await(efmls.load('json', {
+      { formatCommand = 'jq .', formatStdin = true },
+    }, { force = true }))
+    nx.test.expect(#resolved).to_be(1)
+    nx.test.expect(resolved[1].formatCommand).to_be('jq .')
+  end)
+
   nx.test.it('loads a language at most once (deduped)', function()
     local p1 = efmls.load('python', { (require('efmls-configs.linters.flake8')) })
     -- A second trigger for the same ft returns the SAME promise; its tools are ignored.
