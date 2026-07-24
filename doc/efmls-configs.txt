@@ -1,5 +1,5 @@
 *efmls-configs.txt*                Ready-made efm-langserver configs for nxvim
-                                        For nxvim    Last change: 2026 July 24
+                                                                     For nxvim
 
 ==============================================================================
 Table of Contents                            *efmls-configs-table-of-contents*
@@ -99,9 +99,8 @@ The options `setup()` accepts:
 - `root_markers` — list, `settings.rootMarkers` (default `{ ".git/" }`).
 - `on_attach` — `function(client, bufnr)` run when efm attaches.
 - `capabilities` — table, client capabilities to broadcast.
-- `languages` — map `filetype -> { <preset factory>, … }` (or the string
-    `"*defaults"`); registers a FileType autocmd per language that lazily
-    `load()`s it on first open.
+- `languages` — map `filetype -> { <preset factory>, … }` (or the string `"*defaults"`); registers a
+    FileType autocmd per language that lazily `load()`s it on first open.
 
 
 ==============================================================================
@@ -248,8 +247,7 @@ This plugin is a native nxvim port of efmls-configs-nvim by Arnold Chand
 credit for the original collection of linter/formatter configs belongs to that
 project and its contributors.
 
-- Original project: efmls-configs-nvim —
-<https://github.com/creativenull/efmls-configs-nvim>
+- Original project: efmls-configs-nvim — <https://github.com/creativenull/efmls-configs-nvim>
 - License: MIT — Copyright (c) 2021 Arnold Chand
 
 efm-langserver itself is by mattn —

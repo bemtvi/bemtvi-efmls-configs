@@ -49,4 +49,11 @@ bash "$CACHE/panvimdoc.sh" \
 # prose). Em dash (—) and ellipsis (…) are intentional and left as-is.
 sed -i "s/\xe2\x80\x99/'/g; s/\xe2\x80\x98/'/g; s/\xe2\x80\x9c/\"/g; s/\xe2\x80\x9d/\"/g" "$OUTPUT"
 
+# panvimdoc stamps the current date on the header's second line ("Last change:
+# <today>"). That is non-deterministic, so a freshness check would fail on any
+# day after the file was committed. Replace it with a stable, right-aligned
+# header so the output is reproducible.
+printf -v HEADER2 '%78s' 'For nxvim'
+sed -i "2s/.*/$HEADER2/" "$OUTPUT"
+
 echo "done: $OUTPUT"

@@ -1,0 +1,12 @@
+# Enable the pre-push hook once after cloning:
+#   pre-commit install --hook-type pre-push
+repos:
+  - repo: local
+    hooks:
+      - id: generated-docs-up-to-date
+        name: generated docs up to date
+        entry: scripts/check-generated.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]

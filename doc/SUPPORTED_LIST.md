@@ -6,29 +6,31 @@ Please create an Pull Request if you see any mismatched documentation or typos.
 
 ## Default Configurations
 
-Here is a list of languages that are automatically set and configured when you call `languages()`. For more information
-check the docs: [`:help efmls-configs-defaults`](../README.md#default-configurations).
+Here is a list of languages that are automatically set and configured when you call `languages()`.
+For more information check the docs:
+[`:help efmls-configs-defaults`](../README.md#default-configurations).
 
-| **Filetype** | **Default Linter** | **Default Formatter** |
-|--------------|--------------------|-----------------------|
-| CSS/SCSS/LESS/SASS | `stylelint` | `prettier` |
-| JavaScript/JSX TypeScript/TSX | `eslint` | `prettier` |
-| Go | `golangci_lint` |  |
-| HTML | `htmlhint` | `prettier` |
-| Lua | `luacheck` | `stylua` |
-| Nix |  | `alejandra` |
-| PHP | `phpcs` | `phpcbf` |
-| Python | `flake8` | `autopep8` |
-| Ruby | `reek` |  |
-| VIM | `vint` |  |
-| Blade |  | `blade_formatter` |
-| Proto | `buf` | `buf` |
+| **Filetype**                  | **Default Linter** | **Default Formatter** |
+| ----------------------------- | ------------------ | --------------------- |
+| CSS/SCSS/LESS/SASS            | `stylelint`        | `prettier`            |
+| JavaScript/JSX TypeScript/TSX | `eslint`           | `prettier`            |
+| Go                            | `golangci_lint`    |                       |
+| HTML                          | `htmlhint`         | `prettier`            |
+| Lua                           | `luacheck`         | `stylua`              |
+| Nix                           |                    | `alejandra`           |
+| PHP                           | `phpcs`            | `phpcbf`              |
+| Python                        | `flake8`           | `autopep8`            |
+| Ruby                          | `reek`             |                       |
+| VIM                           | `vint`             |                       |
+| Blade                         |                    | `blade_formatter`     |
+| Proto                         | `buf`              | `buf`                 |
 
 ## Languages
 
-Below are the supported linters and formatters that are configured to run with efm-langserver. You can access
-the table of contents of this document on the left hand corner of the file, in github (Or just a simple <kbd>Ctrl</kbd> + <kbd>F</kbd>
-to search, <kbd>Cmd</kbd> + <kbd>F</kbd> if on Mac OS). See example code: [`:help efmls-configs-setup`](../README.md#setup).
+Below are the supported linters and formatters that are configured to run with efm-langserver. You
+can access the table of contents of this document on the left hand corner of the file, in github (Or
+just a simple <kbd>Ctrl</kbd> + <kbd>F</kbd> to search, <kbd>Cmd</kbd> + <kbd>F</kbd> if on Mac OS).
+See example code: [`:help efmls-configs-setup`](../README.md#setup).
 
 ### Misc (Text, LaTeX, Markdown, RST, etc)
 
@@ -40,13 +42,15 @@ to search, <kbd>Cmd</kbd> + <kbd>F</kbd> if on Mac OS). See example code: [`:hel
 local alex = require('efmls-configs.linters.alex')
 ```
 
-`codespell` [https://github.com/codespell-project/codespell](https://github.com/codespell-project/codespell)
+`codespell`
+[https://github.com/codespell-project/codespell](https://github.com/codespell-project/codespell)
 
 ```lua
 local codespell = require('efmls-configs.linters.codespell')
 ```
 
-`cspell` [https://github.com/streetsidesoftware/cspell](https://github.com/streetsidesoftware/cspell)
+`cspell`
+[https://github.com/streetsidesoftware/cspell](https://github.com/streetsidesoftware/cspell)
 
 ```lua
 local cspell = require('efmls-configs.linters.cspell')
@@ -148,7 +152,8 @@ local shfmt = require('efmls-configs.formatters.shfmt')
 
 #### Formatters
 
-`blade_formatter` [https://github.com/shufo/blade-formatter](https://github.com/shufo/blade-formatter)
+`blade_formatter`
+[https://github.com/shufo/blade-formatter](https://github.com/shufo/blade-formatter)
 
 ```lua
 local blade_formatter = require('efmls-configs.formatters.blade_formatter')
@@ -158,7 +163,8 @@ local blade_formatter = require('efmls-configs.formatters.blade_formatter')
 
 #### Linters
 
-`mcs` [http://www.mono-project.com/docs/about-mono/languages/csharp/](http://www.mono-project.com/docs/about-mono/languages/csharp/)
+`mcs`
+[http://www.mono-project.com/docs/about-mono/languages/csharp/](http://www.mono-project.com/docs/about-mono/languages/csharp/)
 
 ```lua
 local mcs = require('efmls-configs.linters.mcs')
@@ -182,7 +188,8 @@ local uncrustify = require('efmls-configs.formatters.uncrustify')
 
 #### Linters
 
-`clang_format` [https://clang.llvm.org/docs/ClangFormat.html](https://clang.llvm.org/docs/ClangFormat.html)
+`clang_format`
+[https://clang.llvm.org/docs/ClangFormat.html](https://clang.llvm.org/docs/ClangFormat.html)
 
 ```lua
 local clang_format = require('efmls-configs.linters.clang_format')
@@ -206,7 +213,8 @@ local clazy = require('efmls-configs.linters.clazy')
 local cppcheck = require('efmls-configs.linters.cppcheck')
 ```
 
-`cpplint` [https://github.com/google/styleguide/tree/gh-pages/cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint)
+`cpplint`
+[https://github.com/google/styleguide/tree/gh-pages/cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint)
 
 ```lua
 local cpplint = require('efmls-configs.linters.cpplint')
@@ -226,7 +234,8 @@ local gcc = require('efmls-configs.linters.gcc')
 local astyle = require('efmls-configs.formatters.astyle')
 ```
 
-`clang_format` [https://clang.llvm.org/docs/ClangFormat.html](https://clang.llvm.org/docs/ClangFormat.html)
+`clang_format`
+[https://clang.llvm.org/docs/ClangFormat.html](https://clang.llvm.org/docs/ClangFormat.html)
 
 ```lua
 local clang_format = require('efmls-configs.formatters.clang_format')
@@ -248,7 +257,8 @@ local uncrustify = require('efmls-configs.formatters.uncrustify')
 
 #### Linters
 
-`clang_format` [https://clang.llvm.org/docs/ClangFormat.html](https://clang.llvm.org/docs/ClangFormat.html)
+`clang_format`
+[https://clang.llvm.org/docs/ClangFormat.html](https://clang.llvm.org/docs/ClangFormat.html)
 
 ```lua
 local clang_format = require('efmls-configs.linters.clang_format')
@@ -266,7 +276,8 @@ local clang_tidy = require('efmls-configs.linters.clang_tidy')
 local cppcheck = require('efmls-configs.linters.cppcheck')
 ```
 
-`cpplint` [https://github.com/google/styleguide/tree/gh-pages/cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint)
+`cpplint`
+[https://github.com/google/styleguide/tree/gh-pages/cpplint](https://github.com/google/styleguide/tree/gh-pages/cpplint)
 
 ```lua
 local cpplint = require('efmls-configs.linters.cpplint')
@@ -292,7 +303,8 @@ local gcc = require('efmls-configs.linters.gcc')
 local astyle = require('efmls-configs.formatters.astyle')
 ```
 
-`clang_format` [https://clang.llvm.org/docs/ClangFormat.html](https://clang.llvm.org/docs/ClangFormat.html)
+`clang_format`
+[https://clang.llvm.org/docs/ClangFormat.html](https://clang.llvm.org/docs/ClangFormat.html)
 
 ```lua
 local clang_format = require('efmls-configs.formatters.clang_format')
@@ -344,7 +356,8 @@ local joker = require('efmls-configs.formatters.joker')
 
 #### Linters
 
-`cmake_lint` [https://github.com/cheshirekow/cmake_format](https://github.com/cheshirekow/cmake_format)
+`cmake_lint`
+[https://github.com/cheshirekow/cmake_format](https://github.com/cheshirekow/cmake_format)
 
 ```lua
 local cmake_lint = require('efmls-configs.linters.cmake_lint')
@@ -442,7 +455,8 @@ local uncrustify = require('efmls-configs.formatters.uncrustify')
 
 #### Linters
 
-`dartanalyzer` [https://github.com/dart-lang/sdk/tree/master/pkg/analyzer_cli](https://github.com/dart-lang/sdk/tree/master/pkg/analyzer_cli)
+`dartanalyzer`
+[https://github.com/dart-lang/sdk/tree/master/pkg/analyzer_cli](https://github.com/dart-lang/sdk/tree/master/pkg/analyzer_cli)
 
 ```lua
 local dartanalyzer = require('efmls-configs.linters.dartanalyzer')
@@ -450,7 +464,8 @@ local dartanalyzer = require('efmls-configs.linters.dartanalyzer')
 
 #### Formatters
 
-`dartfmt` [https://github.com/dart-lang/sdk/tree/master/utils/dartfmt](https://github.com/dart-lang/sdk/tree/master/utils/dartfmt)
+`dartfmt`
+[https://github.com/dart-lang/sdk/tree/master/utils/dartfmt](https://github.com/dart-lang/sdk/tree/master/utils/dartfmt)
 
 ```lua
 local dartfmt = require('efmls-configs.formatters.dartfmt')
@@ -498,7 +513,8 @@ local fish = require('efmls-configs.linters.fish')
 
 #### Formatters
 
-`fish_indent` [https://fishshell.com/docs/current/cmds/fish_indent.html](https://fishshell.com/docs/current/cmds/fish_indent.html)
+`fish_indent`
+[https://fishshell.com/docs/current/cmds/fish_indent.html](https://fishshell.com/docs/current/cmds/fish_indent.html)
 
 ```lua
 local fish_indent = require('efmls-configs.formatters.fish_indent')
@@ -518,7 +534,8 @@ local gitlint = require('efmls-configs.linters.gitlint')
 
 #### Formatters
 
-`gleam_format` [https://gleam.run/language-server/#code-formatting](https://gleam.run/language-server/#code-formatting)
+`gleam_format`
+[https://gleam.run/language-server/#code-formatting](https://gleam.run/language-server/#code-formatting)
 
 ```lua
 local gleam_format = require('efmls-configs.formatters.gleam_format')
@@ -540,7 +557,8 @@ local djlint = require('efmls-configs.linters.djlint')
 local go_revive = require('efmls-configs.linters.go_revive')
 ```
 
-`golangci_lint` [https://github.com/golangci/golangci-lint](https://github.com/golangci/golangci-lint)
+`golangci_lint`
+[https://github.com/golangci/golangci-lint](https://github.com/golangci/golangci-lint)
 
 ```lua
 local golangci_lint = require('efmls-configs.linters.golangci_lint')
@@ -552,7 +570,8 @@ local golangci_lint = require('efmls-configs.linters.golangci_lint')
 local golint = require('efmls-configs.linters.golint')
 ```
 
-`staticcheck` [https://github.com/dominikh/go-tools/tree/master/cmd/staticcheck](https://github.com/dominikh/go-tools/tree/master/cmd/staticcheck)
+`staticcheck`
+[https://github.com/dominikh/go-tools/tree/master/cmd/staticcheck](https://github.com/dominikh/go-tools/tree/master/cmd/staticcheck)
 
 ```lua
 local staticcheck = require('efmls-configs.linters.staticcheck')
@@ -578,7 +597,8 @@ local gofmt = require('efmls-configs.formatters.gofmt')
 local gofumpt = require('efmls-configs.formatters.gofumpt')
 ```
 
-`goimports` [https://godoc.org/golang.org/x/tools/cmd/goimports](https://godoc.org/golang.org/x/tools/cmd/goimports)
+`goimports`
+[https://godoc.org/golang.org/x/tools/cmd/goimports](https://godoc.org/golang.org/x/tools/cmd/goimports)
 
 ```lua
 local goimports = require('efmls-configs.formatters.goimports')
@@ -610,7 +630,7 @@ local fourmolu = require('efmls-configs.formatters.fourmolu')
 local djlint = require('efmls-configs.linters.djlint')
 ```
 
-`htmlhint` [https://htmlhint.com/](https://htmlhint.com/)
+`htmlhint` [https://htmlhint.com](https://htmlhint.com)
 
 ```lua
 local htmlhint = require('efmls-configs.linters.htmlhint')
@@ -646,7 +666,8 @@ local prettier_d = require('efmls-configs.formatters.prettier_d')
 
 #### Formatters
 
-`google_java_format` [https://github.com/google/google-java-format](https://github.com/google/google-java-format)
+`google_java_format`
+[https://github.com/google/google-java-format](https://github.com/google/google-java-format)
 
 ```lua
 local google_java_format = require('efmls-configs.formatters.google_java_format')
@@ -706,7 +727,8 @@ local xo = require('efmls-configs.linters.xo')
 local biome = require('efmls-configs.formatters.biome')
 ```
 
-`deno_fmt` [https://docs.deno.com/runtime/manual/tools/formatter](https://docs.deno.com/runtime/manual/tools/formatter)
+`deno_fmt`
+[https://docs.deno.com/runtime/manual/tools/formatter](https://docs.deno.com/runtime/manual/tools/formatter)
 
 ```lua
 local deno_fmt = require('efmls-configs.formatters.deno_fmt')
@@ -760,13 +782,15 @@ local prettier = require('efmls-configs.formatters.prettier')
 local prettier_d = require('efmls-configs.formatters.prettier_d')
 ```
 
-`prettier_eslint` [https://github.com/prettier/prettier-eslint](https://github.com/prettier/prettier-eslint)
+`prettier_eslint`
+[https://github.com/prettier/prettier-eslint](https://github.com/prettier/prettier-eslint)
 
 ```lua
 local prettier_eslint = require('efmls-configs.formatters.prettier_eslint')
 ```
 
-`prettier_standard` [https://github.com/sheerun/prettier-standard](https://github.com/sheerun/prettier-standard)
+`prettier_standard`
+[https://github.com/sheerun/prettier-standard](https://github.com/sheerun/prettier-standard)
 
 ```lua
 local prettier_standard = require('efmls-configs.formatters.prettier_standard')
@@ -796,7 +820,8 @@ local oxlint = require('efmls-configs.linters.oxlint')
 
 #### Formatters
 
-`deno_fmt` [https://docs.deno.com/runtime/manual/tools/formatter](https://docs.deno.com/runtime/manual/tools/formatter)
+`deno_fmt`
+[https://docs.deno.com/runtime/manual/tools/formatter](https://docs.deno.com/runtime/manual/tools/formatter)
 
 ```lua
 local deno_fmt = require('efmls-configs.formatters.deno_fmt')
@@ -966,7 +991,8 @@ local checkmake = require('efmls-configs.linters.checkmake')
 
 #### Linters
 
-`markdownlint` [https://github.com/DavidAnson/markdownlint](https://github.com/DavidAnson/markdownlint)
+`markdownlint`
+[https://github.com/DavidAnson/markdownlint](https://github.com/DavidAnson/markdownlint)
 
 ```lua
 local markdownlint = require('efmls-configs.linters.markdownlint')
@@ -1094,13 +1120,15 @@ local psalm = require('efmls-configs.linters.psalm')
 local djlint = require('efmls-configs.formatters.djlint')
 ```
 
-`php_cs_fixer` [https://github.com/PHP-CS-Fixer/PHP-CS-Fixer](https://github.com/PHP-CS-Fixer/PHP-CS-Fixer)
+`php_cs_fixer`
+[https://github.com/PHP-CS-Fixer/PHP-CS-Fixer](https://github.com/PHP-CS-Fixer/PHP-CS-Fixer)
 
 ```lua
 local php_cs_fixer = require('efmls-configs.formatters.php_cs_fixer')
 ```
 
-`phpcbf` [https://github.com/squizlabs/PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
+`phpcbf`
+[https://github.com/squizlabs/PHP_CodeSniffer](https://github.com/squizlabs/PHP_CodeSniffer)
 
 ```lua
 local phpcbf = require('efmls-configs.formatters.phpcbf')
@@ -1412,7 +1440,8 @@ local solhint = require('efmls-configs.linters.solhint')
 
 #### Formatters
 
-`forge_fmt` [https://github.com/foundry-rs/foundry/tree/master/forge](https://github.com/foundry-rs/foundry/tree/master/forge)
+`forge_fmt`
+[https://github.com/foundry-rs/foundry/tree/master/forge](https://github.com/foundry-rs/foundry/tree/master/forge)
 
 ```lua
 local forge_fmt = require('efmls-configs.formatters.forge_fmt')
@@ -1430,13 +1459,15 @@ local sqlfluff = require('efmls-configs.linters.sqlfluff')
 
 #### Formatters
 
-`sql-formatter` [https://github.com/sql-formatter-org/sql-formatter](https://github.com/sql-formatter-org/sql-formatter)
+`sql-formatter`
+[https://github.com/sql-formatter-org/sql-formatter](https://github.com/sql-formatter-org/sql-formatter)
 
 ```lua
 local sql-formatter = require('efmls-configs.formatters.sql-formatter')
 ```
 
-`sqlfluff` [https://github.com/sql-formatter-org/sql-formatter](https://github.com/sql-formatter-org/sql-formatter)
+`sqlfluff`
+[https://github.com/sql-formatter-org/sql-formatter](https://github.com/sql-formatter-org/sql-formatter)
 
 ```lua
 local sqlfluff = require('efmls-configs.formatters.sqlfluff')
@@ -1460,7 +1491,8 @@ local swiftlint = require('efmls-configs.linters.swiftlint')
 
 #### Formatters
 
-`swiftformat` [https://github.com/nicklockwood/SwiftFormat](https://github.com/nicklockwood/SwiftFormat)
+`swiftformat`
+[https://github.com/nicklockwood/SwiftFormat](https://github.com/nicklockwood/SwiftFormat)
 
 ```lua
 local swiftformat = require('efmls-configs.formatters.swiftformat')
@@ -1488,7 +1520,8 @@ local chktex = require('efmls-configs.linters.chktex')
 
 #### Formatters
 
-`latexindent` [https://github.com/cmhughes/latexindent.pl](https://github.com/cmhughes/latexindent.pl)
+`latexindent`
+[https://github.com/cmhughes/latexindent.pl](https://github.com/cmhughes/latexindent.pl)
 
 ```lua
 local latexindent = require('efmls-configs.formatters.latexindent')
@@ -1546,7 +1579,8 @@ local xo = require('efmls-configs.linters.xo')
 local biome = require('efmls-configs.formatters.biome')
 ```
 
-`deno_fmt` [https://docs.deno.com/runtime/manual/tools/formatter](https://docs.deno.com/runtime/manual/tools/formatter)
+`deno_fmt`
+[https://docs.deno.com/runtime/manual/tools/formatter](https://docs.deno.com/runtime/manual/tools/formatter)
 
 ```lua
 local deno_fmt = require('efmls-configs.formatters.deno_fmt')
@@ -1594,13 +1628,15 @@ local prettier = require('efmls-configs.formatters.prettier')
 local prettier_d = require('efmls-configs.formatters.prettier_d')
 ```
 
-`prettier_eslint` [https://github.com/prettier/prettier-eslint](https://github.com/prettier/prettier-eslint)
+`prettier_eslint`
+[https://github.com/prettier/prettier-eslint](https://github.com/prettier/prettier-eslint)
 
 ```lua
 local prettier_eslint = require('efmls-configs.formatters.prettier_eslint')
 ```
 
-`prettier_standard` [https://github.com/sheerun/prettier-standard](https://github.com/sheerun/prettier-standard)
+`prettier_standard`
+[https://github.com/sheerun/prettier-standard](https://github.com/sheerun/prettier-standard)
 
 ```lua
 local prettier_standard = require('efmls-configs.formatters.prettier_standard')
@@ -1630,7 +1666,8 @@ local oxlint = require('efmls-configs.linters.oxlint')
 
 #### Formatters
 
-`deno_fmt` [https://docs.deno.com/runtime/manual/tools/formatter](https://docs.deno.com/runtime/manual/tools/formatter)
+`deno_fmt`
+[https://docs.deno.com/runtime/manual/tools/formatter](https://docs.deno.com/runtime/manual/tools/formatter)
 
 ```lua
 local deno_fmt = require('efmls-configs.formatters.deno_fmt')
@@ -1694,7 +1731,8 @@ local vint = require('efmls-configs.linters.vint')
 local actionlint = require('efmls-configs.linters.actionlint')
 ```
 
-`ansible_lint` [https://github.com/willthames/ansible-lint](https://github.com/willthames/ansible-lint)
+`ansible_lint`
+[https://github.com/willthames/ansible-lint](https://github.com/willthames/ansible-lint)
 
 ```lua
 local ansible_lint = require('efmls-configs.linters.ansible_lint')
