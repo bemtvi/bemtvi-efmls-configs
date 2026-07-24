@@ -16,6 +16,7 @@ Table of Contents                            *efmls-configs-table-of-contents*
   - One shared efm            |efmls-configs-notes-on-the-port-one-shared-efm|
 8. Supported tools                             |efmls-configs-supported-tools|
 9. Credits                                             |efmls-configs-credits|
+
 Ready-made `efm-langserver` configurations for nxvim — a native port of
 efmls-configs-nvim. A curated config table for each of ~150 linters and
 formatters (eslint, stylua, black, luacheck, …), assembled into an efm
