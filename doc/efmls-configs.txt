@@ -1,5 +1,4 @@
 *efmls-configs.txt*                Ready-made efm-langserver configs for nxvim
-                                                                     For nxvim
 
 ==============================================================================
 Table of Contents                            *efmls-configs-table-of-contents*
