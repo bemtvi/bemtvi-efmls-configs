@@ -1,6 +1,9 @@
 {
   "tasks": {
-    "gen": "deno run --allow-read=lua/efmls-configs --allow-write=doc/SUPPORTED_LIST.md,doc/supported-list.json generate.ts"
+    "gen": "deno run --allow-read=lua/efmls-configs --allow-write=doc/SUPPORTED_LIST.md,doc/supported-list.json generate.ts",
+    // Regenerate the vimdoc help file (doc/efmls-configs.txt) from
+    // doc/efmls-configs.md via panvimdoc. Needs pandoc + git on PATH.
+    "doc": "bash scripts/gen-vimdoc.sh"
   },
   "fmt": {
     "lineWidth": 100
