@@ -30,14 +30,26 @@ efmls.setup({ root_markers = { ".git/" } })
 -- Load lua tools only when a lua buffer is first opened.
 nx.autocmd.create("FileType", {
   pattern = "lua",
+  timeout = 5000,
   callback = function()
-    efmls.load("lua", {
+    return efmls.load("lua", {
       require("efmls-configs.linters.luacheck"),
       require("efmls-configs.formatters.stylua"),
     })
   end,
 })
 ```
+
+Note the `return` and the `timeout`. `FileType` is one of nxvim's async-capable events: a handler
+may hand back a promise, and the buffer's read sequence waits at that stage before advancing to
+`BufEnter` / `BufWinEnter`. Returning `load()`'s promise is what makes the buffer land fully wired
+— efm registered and enabled before the file is interactive — instead of racing the first
+keystroke, and it makes a failed resolution surface as a rejection rather than vanish.
+
+The wait is bounded by a settle budget, 500 ms by default, which is too tight here: resolving a
+language probes the filesystem once per tool and may restart a running efm. Blowing it is harmless
+(the sequence advances and the load still finishes) but warns, so raise it with `timeout`. The
+`languages` convenience below does both for you.
 
 `setup(opts)` sets efm's server-wide options; it does NOT resolve any language — that is `load()`'s
 job. Synchronous. Returns the module.
@@ -60,11 +72,15 @@ require("nxvim-efmls-configs").setup({
 
   -- CONVENIENCE: registers a FileType autocmd per language that lazily
   -- load()s it on first open — still on-demand, never eager. Pass the
-  -- string "*defaults" to lazy-wire the bundled default set.
+  -- string "*defaults" to lazy-wire the bundled default set. Each of those
+  -- autocmds returns load()'s promise, so the read sequence waits for it.
   languages = {
     lua = { require("efmls-configs.formatters.stylua") },
     python = { require("efmls-configs.linters.flake8") },
   },
+
+  -- The settle budget for those autocmds, in ms (default 5000).
+  load_timeout = 5000,
 })
 ```
 
@@ -77,7 +93,10 @@ The options `setup()` accepts:
 - `on_attach` — `function(client, bufnr)` run when efm attaches.
 - `capabilities` — table, client capabilities to broadcast.
 - `languages` — map `filetype -> { <preset factory>, … }` (or the string `"*defaults"`); registers a
-  FileType autocmd per language that lazily `load()`s it on first open.
+  FileType autocmd per language that lazily `load()`s it on first open, returning the promise so
+  the buffer's read sequence waits for it.
+- `load_timeout` — ms, the settle budget for those autocmds (default `5000`). A positive number;
+  anything else raises.
 
 # Load
 
@@ -95,8 +114,9 @@ when a file that needs it is first opened.
 ```lua
 nx.autocmd.create("FileType", {
   pattern = "typescript",
+  timeout = 5000,
   callback = function()
-    require("nxvim-efmls-configs").load("typescript", {
+    return require("nxvim-efmls-configs").load("typescript", {
       require("efmls-configs.linters.eslint"),
       require("efmls-configs.formatters.prettier"),
     })

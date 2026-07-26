@@ -88,4 +88,42 @@ nx.test.describe('nxvim-efmls-configs.setup (lazy)', function()
 
     nx.test.expect(nx.lsp._config.efm.settings.languages.markdown).to_be_truthy()
   end)
+
+  nx.test.it('holds the read sequence until the language is loaded', function(t)
+    -- The registered autocmd RETURNS load()'s promise, so `FileType` does not advance
+    -- until efm carries the language. `BufWinEnter` fires last in a buffer's read
+    -- sequence — after BufReadPost/FileType/BufEnter have settled — so what it observes
+    -- is exactly "was the buffer fully wired before it became interactive".
+    --
+    -- Drop the `return` in setup() and this reads nil: the load is still in flight when
+    -- the buffer lands.
+    efmls.setup({ languages = { yaml = { (require('efmls-configs.linters.yamllint')) } } })
+
+    local seen
+    nx.autocmd.create('BufWinEnter', {
+      pattern = '*.yaml',
+      callback = function()
+        local efm = nx.lsp._config.efm
+        seen = efm and efm.settings.languages.yaml or nil
+      end,
+    })
+
+    local dir = nx.test.tempdir()
+    local file = dir .. '/conf.yaml'
+    nx.await(nx.fs.write(file, 'a: 1\n'))
+    t:cmd('edit ' .. file)
+
+    t:wait_for(function()
+      return seen ~= nil
+    end, { tries = 200, interval = 20, message = 'yaml was not loaded by the time the buffer was displayed' })
+    nx.test.expect(seen).to_be_truthy()
+  end)
+
+  nx.test.it('rejects a load_timeout that is not a positive number of ms', function()
+    nx.test
+      .expect(function()
+        efmls.setup({ load_timeout = 0, languages = { toml = { { lintCommand = 'true' } } } })
+      end)
+      .to_error('load_timeout')
+  end)
 end)

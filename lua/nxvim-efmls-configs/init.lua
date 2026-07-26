@@ -17,17 +17,27 @@
 --
 --   nx.autocmd.create("FileType", {
 --     pattern = "lua",
+--     timeout = 5000,
 --     callback = function()
---       efmls.load("lua", {
+--       return efmls.load("lua", {          -- RETURN it: the read chain then waits
 --         require("efmls-configs.linters.luacheck"),
 --         require("efmls-configs.formatters.stylua"),
 --       })
 --     end,
 --   })
 --
+-- `FileType` is an async-capable event, and returning `load`'s promise is what makes
+-- the buffer land fully configured: nxvim holds the read sequence at the `FileType`
+-- stage until every handler settles, so efm is registered + enabled BEFORE `BufEnter`
+-- / `BufWinEnter` — no window where the file is interactive but nothing lints it. Drop
+-- the promise instead and the wiring still happens, just unordered and with a failed
+-- resolution surfacing as nothing at all. The `timeout` raises the 500 ms settle budget
+-- the wait is bounded by: resolving a language probes the filesystem once per tool and
+-- may restart a running efm, which routinely outruns the default.
+--
 -- `setup({ languages = { lua = { … } } })` is a convenience that registers exactly
 -- those FileType autocmds for you — still lazy: each language resolves only when its
--- first buffer opens.
+-- first buffer opens, and awaited the same way.
 
 local defaults = require('efmls-configs.defaults')
 local fs = require('efmls-configs.fs')
@@ -187,6 +197,7 @@ end
 --                              load()s it on first open (still on-demand, not eager).
 --                              Use "*defaults" as the value to lazy-wire the bundled
 --                              default set.
+--   opts.load_timeout     ms   settle budget for those autocmds (default 5000)
 function M.setup(opts)
   opts = opts or {}
   if type(opts) ~= 'table' then
@@ -203,12 +214,26 @@ function M.setup(opts)
 
   if type(languages) == 'table' then
     local group = nx.augroup.create('nxvim-efmls-configs', { clear = true })
+    -- `FileType` is async-capable, so the callback RETURNS load()'s promise: nxvim holds
+    -- the buffer's read sequence at the FileType stage until it settles, and efm is
+    -- registered + enabled before BufEnter/BufWinEnter rather than racing them.
+    --
+    -- The wait is bounded by a settle budget (500 ms by default) — too tight here, since
+    -- resolving a language probes the filesystem once per tool and may restart a running
+    -- efm; blowing it costs nothing but a warning, yet a warning per language on every
+    -- first open is noise about normal behaviour. 5 s is the default, `load_timeout`
+    -- overrides it.
+    local timeout = opts.load_timeout or 5000
+    if type(timeout) ~= 'number' or timeout <= 0 then
+      error('nxvim-efmls-configs.setup: load_timeout must be a positive number of ms', 2)
+    end
     for ft, tools in pairs(languages) do
       nx.autocmd.create('FileType', {
         group = group,
         pattern = ft,
+        timeout = timeout,
         callback = function()
-          M.load(ft, tools)
+          return M.load(ft, tools)
         end,
       })
     end

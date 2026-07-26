@@ -34,8 +34,9 @@ nx.plugins({
 
       nx.autocmd.create("FileType", {
         pattern = "lua",
+        timeout = 5000,
         callback = function()
-          efmls.load("lua", {
+          return efmls.load("lua", {
             require("efmls-configs.linters.luacheck"),
             require("efmls-configs.formatters.stylua"),
           })
@@ -46,9 +47,17 @@ nx.plugins({
 })
 ```
 
+**Return** `load()`'s promise. `FileType` is one of nxvim's async-capable events, and
+returning the promise holds the buffer's read sequence at that stage until efm is
+registered and enabled — so the file is never interactive-but-unlinted for a beat.
+`timeout` raises the 500 ms settle budget the wait is bounded by: resolving a language
+probes the filesystem once per tool and may restart a running efm, which routinely
+outruns the default.
+
 Run `:PluginSync` to clone it, then open a file of a loaded type. Prefer the
 bundled defaults over listing tools by hand? `setup({ languages = "*defaults" })`
-lazily wires the whole default set.
+lazily wires the whole default set — and does both of the above for you (override the
+budget with `setup({ load_timeout = … })`).
 
 ## Documentation
 
