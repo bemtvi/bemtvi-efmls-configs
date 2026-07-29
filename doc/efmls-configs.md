@@ -63,7 +63,8 @@ require("nxvim-efmls-configs").setup({
   formatting = true,
   range_formatting = true,
 
-  -- Project-root markers efm uses to locate a workspace (default { ".git/" }).
+  -- Where a project starts (default { ".git/" }) — for efm's own workspace
+  -- lookup AND for nxvim's server root, so one project runs one efm.
   root_markers = { ".git/", ".luacheckrc", "stylua.toml" },
 
   -- Run when efm attaches, and client capabilities to broadcast.
@@ -89,7 +90,11 @@ The options `setup()` accepts:
 - `command` — argv for the efm-langserver command (default `{ "efm-langserver" }`).
 - `formatting` — bool, advertise document formatting (default `true`).
 - `range_formatting` — bool, advertise range formatting (default `true`).
-- `root_markers` — list, `settings.rootMarkers` (default `{ ".git/" }`).
+- `root_markers` — list, where a project starts (default `{ ".git/" }`). It drives both efm's own
+  `settings.rootMarkers` and nxvim's server-root resolution, so one project runs **one** efm rather
+  than one per directory (nxvim keys a server by config name plus root, and with no markers falls
+  back to each file's own directory). A trailing slash is efm's "directory marker" spelling and is
+  stripped for nxvim, which matches directory entry names exactly.
 - `on_attach` — `function(client, bufnr)` run when efm attaches.
 - `capabilities` — table, client capabilities to broadcast.
 - `languages` — map `filetype -> { <preset factory>, … }` (or the string `"*defaults"`); registers a

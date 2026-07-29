@@ -83,6 +83,23 @@ M._loaded = {}
 -- RESTART the running server rather than rely on a config change reaching it.
 local efm_live = false
 
+-- The same markers, spelled for nxvim's root resolution. `rootMarkers` is efm's own
+-- setting and follows efm's convention, where a trailing slash means "a DIRECTORY
+-- marker" (`.git/`); nxvim's `root_markers` matches a directory entry's NAME exactly,
+-- so `.git/` handed to it never matches anything. One user-facing knob
+-- (`setup{ root_markers = }`), translated per consumer.
+local function nx_markers(markers)
+  local out = {}
+  for _, m in ipairs(markers) do
+    if type(m) == 'string' then
+      out[#out + 1] = (m:gsub('/+$', ''))
+    else
+      out[#out + 1] = m
+    end
+  end
+  return out
+end
+
 -- Build efm's config from the accumulated state and register + enable it. efm reads
 -- its `languages` map only at spawn (nxvim delivers the config once, at the
 -- handshake; a running efm cannot be reconfigured at runtime), so whenever the map
@@ -98,15 +115,27 @@ local efm_live = false
 -- replacement while the running efm kept applying the tools it spawned with.
 local function reconfigure()
   local o = M._opts
+  local markers = o.root_markers or { '.git/' }
   local cfg = {
     cmd = o.command or { 'efm-langserver' },
     filetypes = M._filetypes,
+    -- nxvim's OWN root resolution, which decides how many efm processes exist: a
+    -- server is keyed by (name, root), and with no `root_markers` nxvim falls back to
+    -- each file's own DIRECTORY. A project with `src/` and `test/` then runs one efm
+    -- per directory — not the single shared server this plugin is built around, and
+    -- every `load()` restarts all of them. Feeding it the same markers efm uses
+    -- collapses a project onto one root, and one efm.
+    --
+    -- It reads as a duplicate of `settings.rootMarkers` below and is not: that one is
+    -- efm's, telling efm's own linters where the project starts, and efm never sees
+    -- this one.
+    root_markers = nx_markers(markers),
     init_options = {
       documentFormatting = o.formatting ~= false,
       documentRangeFormatting = o.range_formatting ~= false,
     },
     settings = {
-      rootMarkers = o.root_markers or { '.git/' },
+      rootMarkers = markers,
       languages = M._languages,
     },
   }
@@ -229,7 +258,12 @@ end
 --   opts.command          argv efm-langserver command (default { "efm-langserver" })
 --   opts.formatting       bool advertise document formatting (default true)
 --   opts.range_formatting bool advertise range formatting (default true)
---   opts.root_markers     list settings.rootMarkers (default { ".git/" })
+--   opts.root_markers     list where a project starts (default { ".git/" }). Drives
+--                              BOTH efm's own `settings.rootMarkers` AND nxvim's
+--                              server-root resolution, so one project runs one efm
+--                              rather than one per directory. A trailing slash is
+--                              efm's "directory marker" spelling; it is stripped for
+--                              nxvim, which matches entry names exactly.
 --   opts.on_attach        fn   function(client, bufnr) run when efm attaches
 --   opts.capabilities     tbl  client capabilities to broadcast
 --   opts.languages        map  filetype -> { <preset factory>, … }. CONVENIENCE:
