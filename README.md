@@ -59,10 +59,38 @@ bundled defaults over listing tools by hand? `setup({ languages = "*defaults" })
 lazily wires the whole default set — and does both of the above for you (override the
 budget with `setup({ load_timeout = … })`).
 
+## Formatting: aim it at efm
+
+efm is a **second** server on the buffer — every enabled config whose filetypes
+match attaches, so a Lua buffer carries `lua_ls` *and* efm. Their diagnostics
+merge, which is the point of running it. But a bare `nx.lsp.format()` formats
+with the first attached server advertising `documentFormatting` **in config-name
+order**, and `biome` / `clangd` / `denols` / `basedpyright` all sort before
+`efm` — so it quietly runs someone else's formatter instead of the one you
+configured here. Name the server:
+
+```lua
+local efmls = require("nxvim-efmls-configs")
+
+-- efmls.format() is nx.lsp.format({ name = "efm" })
+nx.keymap.set("n", "<leader>lf", efmls.format, { desc = "Format with efm" })
+
+-- Format on save: BufWritePre is gated, so RETURN the promise and the write waits.
+nx.autocmd.create("BufWritePre", {
+  pattern = { "*.lua", "*.py" },
+  callback = function()
+    return efmls.format()
+  end,
+})
+```
+
+`:EfmlsHealth` reports which binaries resolved, whether efm is actually running,
+and every server attached to the current buffer.
+
 ## Documentation
 
-Full docs — `setup()` options, the `load()` loader, defaults, `:EfmlsHealth`,
-and notes on the async port — live in the help file:
+Full docs — `setup()` options, the `load()` loader, defaults, formatting,
+`:EfmlsHealth`, and notes on the async port — live in the help file:
 
 - In editor: `:help efmls-configs`
 - On GitHub: [doc/efmls-configs.md](./doc/efmls-configs.md) (the help source)

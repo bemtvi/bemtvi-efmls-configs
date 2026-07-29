@@ -38,6 +38,15 @@
 -- `setup({ languages = { lua = { … } } })` is a convenience that registers exactly
 -- those FileType autocmds for you — still lazy: each language resolves only when its
 -- first buffer opens, and awaited the same way.
+--
+-- efm is a SECOND server on the buffer. Every enabled config whose filetypes match
+-- attaches (`lua_ls` *and* efm on a Lua buffer, `ts_ls` *and* efm on a TypeScript
+-- one): each publishes its own diagnostics, and nxvim merges them. That is what you
+-- want for linting — and it is exactly why formatting must be aimed. A bare
+-- `nx.lsp.format()` goes to the first attached server advertising
+-- `documentFormatting`, in config-NAME order, so `biome` / `clangd` / `denols` /
+-- `basedpyright` all win over `efm` and your prettier/stylua/black config is quietly
+-- bypassed. Format through `efmls.format()` (or `nx.lsp.format({ name = "efm" })`).
 
 local defaults = require('efmls-configs.defaults')
 local fs = require('efmls-configs.fs')
@@ -183,6 +192,29 @@ function M.load(ft, tools, opts)
   return p
 end
 
+-- M.format() — format the current buffer with **efm**, whatever else is attached.
+-- Returns nx.lsp.format's promise (resolves once the edits land), so it sequences and
+-- can gate a write.
+--
+-- A buffer carries every server enabled for its filetype, and a bare
+-- `nx.lsp.format()` picks the first one advertising `documentFormatting` in config-name
+-- order — `biome`, `clangd`, `denols`, `basedpyright` all sort before `efm`. Naming the
+-- server is the difference between running the formatter you configured here and
+-- silently running someone else's. Bind it directly, or gate a write on it:
+--
+--   nx.keymap.set("n", "<leader>lf", efmls.format, { desc = "Format with efm" })
+--
+--   nx.autocmd.create("BufWritePre", {
+--     pattern = "*.lua",
+--     callback = function() return efmls.format() end, -- RETURN: the write waits
+--   })
+--
+-- `BufWritePre` is nxvim's gated event: returning the promise holds the write until
+-- efm's edits are in the buffer, so format-on-save writes the formatted text.
+function M.format()
+  return nx.lsp.format({ name = SERVER })
+end
+
 -- M.setup(opts) — set efm's GLOBAL options (it does NOT resolve any language; that is
 -- load()'s job). Synchronous. Returns M.
 --
@@ -242,13 +274,13 @@ function M.setup(opts)
   return M
 end
 
--- M.health() — report tool resolution status (also the `:EfmlsHealth` command).
+-- M.health() — report tool resolution AND efm's live state (also `:EfmlsHealth`).
 function M.health()
-  return health.check()
+  return health.check({ filetypes = M._filetypes })
 end
 
 nx.command('EfmlsHealth', function()
-  health.check()
+  M.health()
 end)
 
 return M

@@ -41,25 +41,44 @@ nx.plugins({
       --    is an async factory (a function returning a promise of its efm config);
       --    load() awaits them and resolves the binaries over nx.fs, never at startup.
       --    TYPE: :edit examples/sample.lua  →  SEE: "efm attached" once efm starts.
+      --    RETURN the promise: FileType is async-capable, so nxvim holds the buffer's
+      --    read sequence there until efm is registered and enabled — the file is never
+      --    interactive-but-unlinted. `timeout` raises the 500 ms settle budget, which a
+      --    per-tool filesystem probe routinely outruns.
       nx.autocmd.create('FileType', {
         pattern = 'lua',
+        timeout = 5000,
         callback = function()
-          efmls.load('lua', {
+          return efmls.load('lua', {
             require('efmls-configs.linters.luacheck'),
             require('efmls-configs.formatters.stylua'),
           })
         end,
       })
 
-      -- 3. A convenience map: <leader>lf asks efm (via nx.lsp) to format the buffer.
+      -- 3. A convenience map: <leader>lf asks EFM to format the buffer. Aimed at efm
+      --    on purpose: a bare nx.lsp.format() formats with whichever attached server
+      --    sorts first by config name (lua_ls, biome, denols, …), which on a real
+      --    config is not the tool you set up here.
       --    TYPE: <leader>lf on examples/sample.lua  →  SEE: stylua reflows it.
-      nx.keymap.set('n', '<leader>lf', nx.lsp.format, { desc = 'Format with efm' })
+      nx.keymap.set('n', '<leader>lf', efmls.format, { desc = 'Format with efm' })
+
+      -- 4. Format on save. BufWritePre is nxvim's gated event: RETURN the promise and
+      --    the write waits for efm's edits, so what lands on disk is formatted.
+      --    TYPE: mangle examples/sample.lua, then :w  →  SEE: it is stylua'd, then saved.
+      nx.autocmd.create('BufWritePre', {
+        pattern = '*.lua',
+        callback = function()
+          return efmls.format()
+        end,
+      })
 
       -- The same wiring, done for you: `efmls.setup({ languages = { lua = { … } } })`
       -- registers the FileType autocmd above. Use `languages = "*defaults"` to lazy-
       -- wire the whole bundled set (lua, python, go, js/ts, css, html, php, ruby, …).
       --
-      -- Run `:EfmlsHealth` any time to see which tool binaries were found.
+      -- Run `:EfmlsHealth` any time to see which tool binaries were found, whether efm
+      -- is running, and which servers are attached to the buffer you are in.
     end,
   },
 })

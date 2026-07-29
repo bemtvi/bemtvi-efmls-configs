@@ -107,9 +107,14 @@ Resolve `tools` (a list of async presets from `efmls-configs.linters.*` /
 efm-langserver, and enable it. Async: returns a promise of the resolved config list.
 
 Loads at most once per filetype — repeat or concurrent triggers share the one resolution. Pass
-`{ force = true }` to re-resolve and replace a filetype's tools. Call it from a FileType autocmd so
-a language loads exactly when its buffer is opened; a tool's binary is looked up (over `nx.fs`) only
-when a file that needs it is first opened.
+`{ force = true }` to re-resolve and replace a filetype's tools (a replacement, not a merge: tools
+dropped from the list are gone from efm's config). Call it from a FileType autocmd so a language
+loads exactly when its buffer is opened; a tool's binary is looked up (over `nx.fs`) only when a
+file that needs it is first opened.
+
+A file opened while the very first `load()` is still resolving is served too: efm is registered a
+few ticks after that buffer's `FileType` already fired, and `nx.lsp.enable` catches up every open
+buffer, so the file attaches as soon as it is on screen.
 
 ```lua
 nx.autocmd.create("FileType", {
@@ -143,25 +148,66 @@ local defaults = require("efmls-configs.defaults").languages()
 
 # Formatting
 
-efm formatting rides nxvim's native LSP verbs — bind one:
+efm is a SECOND server on the buffer. Every enabled config whose filetypes match attaches, so a Lua
+buffer carries `lua_ls` *and* efm, a TypeScript one `ts_ls` *and* efm. Each publishes its own
+diagnostics and nxvim merges them — which is exactly what you want from a linter, and exactly why
+formatting has to be aimed.
+
+A bare `nx.lsp.format()` formats with the first attached server that advertises `documentFormatting`,
+in config-NAME order. `biome`, `clangd`, `cssls`, `denols`, `basedpyright` all sort before `efm`, so
+on a real config the bare call quietly runs someone else's formatter and your prettier / stylua /
+black setup here never gets a look in. Name the server:
 
 ```lua
-nx.keymap.set("n", "<leader>lf", nx.lsp.format, { desc = "Format with efm" })
+local efmls = require("nxvim-efmls-configs")
+
+-- efmls.format() is nx.lsp.format({ name = "efm" }): efm formats, whatever else attached.
+nx.keymap.set("n", "<leader>lf", efmls.format, { desc = "Format with efm" })
 ```
+
+`format()` returns the promise `nx.lsp.format` returns — it resolves once the edits are in the
+buffer, so it can gate a write. `BufWritePre` is nxvim's gated event: RETURN the promise and the
+write waits, so format-on-save writes formatted text rather than racing the save.
+
+```lua
+nx.autocmd.create("BufWritePre", {
+  pattern = { "*.lua", "*.py" },
+  callback = function()
+    return efmls.format()
+  end,
+})
+```
+
+`:EfmlsHealth` lists every server attached to the current buffer, so it is easy to see when
+something else is in the running.
 
 # Health
 
 `:EfmlsHealth`
 
-Reports which tool binaries have been resolved so far (as languages are loaded) and which were
-missing — the async analogue of neovim's `:checkhealth efmls-configs`. Also available as
-`require("nxvim-efmls-configs").health()`.
+The async analogue of neovim's `:checkhealth efmls-configs`, in two halves:
+
+- which tool binaries have been resolved so far (as languages are loaded) and which were missing;
+- efm's LIVE state — the languages loaded, whether efm is actually running, whether it is attached
+  to the buffer you are in, and every server that is.
+
+The second half is the one that answers "why is nothing linting this file?": a tool can resolve
+perfectly and still do nothing because efm never attached here (its language was never loaded for
+this filetype, or `efm-langserver` itself isn't installed and the spawn failed).
+
+Also available as `require("nxvim-efmls-configs").health()`, which returns
+`{ ok, errors, status, running, attached }`.
 
 # Troubleshooting
 
 Run `:EfmlsHealth` when you get no response from a linter or formatter you expected. A "no
 executable found" result means the tool was not found on the provided filepath — ensure it is
-installed globally or on a valid path.
+installed globally or on a valid path. "efm is NOT running" means no language has been loaded yet
+(open a file of a configured type) or `efm-langserver` is missing; "efm is NOT attached to this
+buffer" means this filetype has no language loaded.
+
+Formatting that runs the wrong tool is a different failure: see `efmls-configs-formatting` — use
+`format()`, not a bare `nx.lsp.format()`.
 
 For nodejs/npm, php/composer, ruby/bundler: project-local tools are preferred over the global
 `$PATH`, so check whether the tool is installed in your `node_modules/.bin` (npm), `vendor/bin`

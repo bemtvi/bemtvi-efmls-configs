@@ -36,6 +36,25 @@ nx.test.describe('nxvim-efmls-configs.load', function()
     nx.test.expect(#resolved).to_be(2) -- two real tools; the leaked string dropped
   end)
 
+  nx.test.it("force REPLACES a language's tools, leaving no trace of the old ones", function()
+    nx.await(efmls.load('toml', {
+      { lintCommand = 'taplo lint -', lintStdin = true },
+      { formatCommand = 'taplo fmt -', formatStdin = true },
+    }, { force = true }))
+    -- Re-resolve with a SHORTER list: the language must end up with exactly these
+    -- tools. Merged entry-by-entry instead, tool 1 would keep `lintCommand` from the
+    -- old first entry and the dropped second entry would survive — efm would run a
+    -- config nobody wrote.
+    nx.await(efmls.load('toml', {
+      { formatCommand = 'taplo fmt -', formatStdin = true },
+    }, { force = true }))
+
+    local tools = nx.lsp._config.efm.settings.languages.toml
+    nx.test.expect(#tools).to_be(1)
+    nx.test.expect(tools[1].lintCommand).to_be_nil()
+    nx.test.expect(tools[1].formatCommand).to_be('taplo fmt -')
+  end)
+
   nx.test.it('accepts a raw config table as a tool entry', function()
     local resolved = nx.await(efmls.load('json', {
       { formatCommand = 'jq .', formatStdin = true },
