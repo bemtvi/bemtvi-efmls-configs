@@ -108,7 +108,8 @@ efm-langserver, and enable it. Async: returns a promise of the resolved config l
 
 Loads at most once per filetype — repeat or concurrent triggers share the one resolution. Pass
 `{ force = true }` to re-resolve and replace a filetype's tools (a replacement, not a merge: tools
-dropped from the list are gone from efm's config). Call it from a FileType autocmd so a language
+dropped from the list are gone from efm's config, and a running efm is restarted so it applies the
+replacement rather than the tools it spawned with). Call it from a FileType autocmd so a language
 loads exactly when its buffer is opened; a tool's binary is looked up (over `nx.fs`) only when a
 file that needs it is first opened.
 
@@ -241,9 +242,11 @@ blocking.
 
 Like upstream, a single efm-langserver instance handles every language (its `languages` setting is a
 `filetype → tools` map). Upstream configures that whole map eagerly, before efm starts. Loading
-lazily means a language can be added AFTER efm is already running — but efm reads its `languages`
-map only at spawn, so the plugin RESTARTS efm (`nx.lsp.restart`) when a new language is loaded,
-respawning it with the grown map.
+lazily means the map can change AFTER efm is already running — but efm reads its `languages` map
+only at spawn, so the plugin RESTARTS efm (`nx.lsp.restart`) on every change, respawning it with the
+map as it stands. That covers a newly-loaded language and a `{ force = true }` reload alike: a force
+reload adds no language, so restarting only on growth would leave the live server running the tools
+it was spawned with while the config showed the replacement.
 
 # Supported tools
 

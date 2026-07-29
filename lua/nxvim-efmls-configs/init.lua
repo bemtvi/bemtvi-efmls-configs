@@ -85,12 +85,18 @@ local efm_live = false
 
 -- Build efm's config from the accumulated state and register + enable it. efm reads
 -- its `languages` map only at spawn (nxvim delivers the config once, at the
--- handshake; a running efm cannot be reconfigured at runtime), so when a language is
--- added *after* efm is already running we must RESTART it — otherwise the live server
--- would never see the new language. (The upstream neovim plugin sidesteps this by
+-- handshake; a running efm cannot be reconfigured at runtime), so whenever the map
+-- changes *after* efm is already running we must RESTART it — otherwise the live
+-- server would never see the change. (The upstream neovim plugin sidesteps this by
 -- configuring the whole map eagerly, before its one efm ever starts; nxvim's
 -- `nx.lsp.restart` lets us do it lazily against one server instead.)
-local function reconfigure(grew)
+--
+-- EVERY change, not just a new language: this runs only from `do_load`, which a
+-- filetype reaches on its first load or on a `force` re-load — and a force re-load
+-- replaces that language's tools without adding one. Gating the restart on "the
+-- language is new" left exactly that case silent: `nx.lsp._config` showed the
+-- replacement while the running efm kept applying the tools it spawned with.
+local function reconfigure()
   local o = M._opts
   local cfg = {
     cmd = o.command or { 'efm-langserver' },
@@ -112,10 +118,13 @@ local function reconfigure(grew)
   end
 
   nx.lsp.config(SERVER, cfg)
+  -- `enable` also catches up every buffer already open — a language resolves over the
+  -- async `nx.fs` seam, so the buffers that triggered it have long since had their
+  -- `FileType` fired, and nothing re-fires it for a buffer whose filetype is set.
   nx.lsp.enable({ SERVER })
-  -- If efm was already running before this language, the grown config won't reach the
-  -- live server — restart it so it respawns with the full map.
-  if grew and efm_live then
+  -- If efm was already running, the changed config won't reach the live server —
+  -- restart it so it respawns with the map as it stands now.
+  if efm_live then
     nx.lsp.restart(SERVER)
   end
   efm_live = true
@@ -157,14 +166,13 @@ local do_load = nx.async(function(ft, tools)
     error('nxvim-efmls-configs.load: ' .. tostring(ft) .. ' has no tools', 2)
   end
 
-  local grew = M._languages[ft] == nil
   M._languages[ft] = configs
   if not ft_seen[ft] then
     ft_seen[ft] = true
     M._filetypes[#M._filetypes + 1] = ft
   end
 
-  reconfigure(grew)
+  reconfigure()
   return configs
 end)
 
