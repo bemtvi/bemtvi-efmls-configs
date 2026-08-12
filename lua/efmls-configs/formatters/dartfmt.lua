@@ -4,9 +4,9 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'dart'
-  local command = string.format('%s format --output show', nx.await(fs.executable(formatter)))
+  local command = string.format('%s format --output show', btv.await(fs.executable(formatter)))
 
   return {
     formatCommand = command,

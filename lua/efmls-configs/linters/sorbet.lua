@@ -5,9 +5,9 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'sorbet'
-  local command = string.format('%s typecheck --color never ${INPUT}', nx.await(fs.executable('srb', fs.Scope.BUNDLE)))
+  local command = string.format('%s typecheck --color never ${INPUT}', btv.await(fs.executable('srb', fs.Scope.BUNDLE)))
 
   return {
     prefix = linter,

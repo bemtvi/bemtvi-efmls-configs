@@ -5,9 +5,9 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'php'
-  local command = string.format('%s -l', nx.await(fs.executable(linter)))
+  local command = string.format('%s -l', btv.await(fs.executable(linter)))
 
   return {
     prefix = linter,

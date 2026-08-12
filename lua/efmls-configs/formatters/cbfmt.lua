@@ -3,8 +3,8 @@
 -- url: https://github.com/lukas-reineke/cbfmt
 
 local fs = require('efmls-configs.fs')
-return nx.async(function()
-  local formatter = nx.await(fs.executable('cbfmt'))
+return btv.async(function()
+  local formatter = btv.await(fs.executable('cbfmt'))
   local command = string.format("%s --stdin-filepath '${INPUT}' --best-effort", formatter)
 
   return {

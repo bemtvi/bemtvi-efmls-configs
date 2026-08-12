@@ -5,9 +5,9 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'fecs'
-  local bin = nx.await(fs.executable(linter, fs.Scope.NODE))
+  local bin = btv.await(fs.executable(linter, fs.Scope.NODE))
   local args = 'check --color=false --stream "${INPUT}"'
   local command = string.format('%s %s', bin, args)
 

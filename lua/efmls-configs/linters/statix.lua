@@ -5,8 +5,8 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
-  local linter = nx.await(fs.executable('statix'))
+return btv.async(function()
+  local linter = btv.await(fs.executable('statix'))
   local command = string.format('%s check --stdin --format=errfmt', linter)
 
   return {

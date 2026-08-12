@@ -35,9 +35,9 @@ echo "generating $OUTPUT from $INPUT ..."
 bash "$CACHE/panvimdoc.sh" \
   --project-name efmls-configs \
   --input-file "$INPUT" \
-  --vim-version "nxvim" \
+  --vim-version "bemtvi" \
   --toc true \
-  --description "Ready-made efm-langserver configs for nxvim" \
+  --description "Ready-made efm-langserver configs for bemtvi" \
   --title-date-pattern "%Y %B %d" \
   --dedup-subheadings true \
   --demojify true \
@@ -51,8 +51,8 @@ sed -i "s/\xe2\x80\x99/'/g; s/\xe2\x80\x98/'/g; s/\xe2\x80\x9c/\"/g; s/\xe2\x80\
 
 # panvimdoc's second header line is "For <version>    Last change: <date>". The
 # date is non-deterministic (a freshness check would fail the next day) and the
-# "For nxvim" half just restates the description on line 1, so drop the line
-# entirely — the output is then reproducible and doesn't say "nxvim" twice.
+# "For bemtvi" half just restates the description on line 1, so drop the line
+# entirely — the output is then reproducible and doesn't say "bemtvi" twice.
 sed -i '2d' "$OUTPUT"
 
 # panvimdoc emits no blank line between the last table-of-contents entry and the

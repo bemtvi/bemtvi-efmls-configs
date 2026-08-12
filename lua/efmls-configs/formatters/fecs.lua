@@ -8,10 +8,10 @@ local fs = require('efmls-configs.fs')
 -- This formatter leave it's tooling information
 -- at the line. Check for workarounds, if possible.
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'fecs'
   local args = "format --silent --ignore --stream '${INPUT}'"
-  local command = string.format('%s %s', nx.await(fs.executable(formatter, fs.Scope.NODE)), args)
+  local command = string.format('%s %s', btv.await(fs.executable(formatter, fs.Scope.NODE)), args)
 
   return {
     formatCommand = command,

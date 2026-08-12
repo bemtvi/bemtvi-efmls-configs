@@ -4,11 +4,11 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'stylua'
   local command = string.format(
     "%s --color Never ${--range-start:charStart} ${--range-end:charEnd} --stdin-filepath '${INPUT}' -",
-    nx.await(fs.executable(formatter))
+    btv.await(fs.executable(formatter))
   )
 
   return {

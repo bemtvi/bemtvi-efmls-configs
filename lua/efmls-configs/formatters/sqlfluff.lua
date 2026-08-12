@@ -4,11 +4,11 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'sqlfluff'
   local command = string.format(
     '%s format --dialect ansi --nocolor --ignore ${INPUT}',
-    nx.await(fs.executable(formatter, fs.Scope.NODE))
+    btv.await(fs.executable(formatter, fs.Scope.NODE))
   )
 
   return {

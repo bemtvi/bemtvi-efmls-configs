@@ -4,18 +4,18 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
-  local formatter = nx.await(fs.executable('rustfmt'))
+return btv.async(function()
+  local formatter = btv.await(fs.executable('rustfmt'))
   local command = string.format('%s --emit=stdout', formatter)
 
-  -- Pass the crate's Rust edition to rustfmt. Read Cargo.toml for real over nx.fs,
+  -- Pass the crate's Rust edition to rustfmt. Read Cargo.toml for real over btv.fs,
   -- walking up from the cwd until it is found.
   local dir = vim.fn.getcwd()
   while dir and dir ~= '' do
     local cargo = dir .. '/Cargo.toml'
-    if nx.await(nx.fs.exists(cargo)) then
+    if btv.await(btv.fs.exists(cargo)) then
       local ok, contents = pcall(function()
-        return nx.await(nx.fs.read_text(cargo))
+        return btv.await(btv.fs.read_text(cargo))
       end)
       if ok and contents then
         local edition = contents:match('edition%s*=%s*"(%d+)"')
@@ -25,7 +25,7 @@ return nx.async(function()
       end
       break
     end
-    local parent = nx.fname.modify(dir, ':h')
+    local parent = btv.fname.modify(dir, ':h')
     if parent == dir then
       break
     end

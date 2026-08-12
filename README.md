@@ -1,21 +1,21 @@
-# nxvim-efmls-configs
+# bemtvi-efmls-configs
 
 Ready-made [`efm-langserver`][efm-langserver] configurations for
-[nxvim](https://github.com/davidrios/nxvim) — a native port of
+[bemtvi](https://github.com/davidrios/bemtvi) — a native port of
 [efmls-configs-nvim](https://github.com/creativenull/efmls-configs-nvim).
 
 efm-langserver is a general-purpose language server that runs ordinary linters
 and formatters (eslint, stylua, black, luacheck, …) and speaks their results
 back over LSP. This plugin ships a curated config table for each of ~150 such
-tools and drives them onto nxvim's own `nx.lsp` control surface. There is **no
+tools and drives them onto bemtvi's own `btv.lsp` control surface. There is **no
 neovim compatibility layer** — each preset is plain data (`lintCommand` /
 `formatCommand` / root markers) the engine understands directly, resolved
-asynchronously over `nx.fs`.
+asynchronously over `btv.fs`.
 
 > This plugin only *configures* tools; it does not install them. Install
 > [`efm-langserver`][efm-langserver] and the linters/formatters you want
 > yourself. A missing binary is reported by `:EfmlsHealth` and simply isn't
-> run — nxvim never pretends a tool that isn't there is working.
+> run — bemtvi never pretends a tool that isn't there is working.
 
 ## Install
 
@@ -25,14 +25,14 @@ per-language**: set efm's global options once, then load each language from a
 it is opened.
 
 ```lua
-nx.plugins({
+btv.plugins({
   {
-    "nxvim/nxvim-efmls-configs",
+    "bemtvi/bemtvi-efmls-configs",
     config = function()
-      local efmls = require("nxvim-efmls-configs")
+      local efmls = require("bemtvi-efmls-configs")
       efmls.setup({ root_markers = { ".git/" } })
 
-      nx.autocmd.create("FileType", {
+      btv.autocmd.create("FileType", {
         pattern = "lua",
         timeout = 5000,
         callback = function()
@@ -47,7 +47,7 @@ nx.plugins({
 })
 ```
 
-**Return** `load()`'s promise. `FileType` is one of nxvim's async-capable events, and
+**Return** `load()`'s promise. `FileType` is one of bemtvi's async-capable events, and
 returning the promise holds the buffer's read sequence at that stage until efm is
 registered and enabled — so the file is never interactive-but-unlinted for a beat.
 `timeout` raises the 500 ms settle budget the wait is bounded by: resolving a language
@@ -63,20 +63,20 @@ budget with `setup({ load_timeout = … })`).
 
 efm is a **second** server on the buffer — every enabled config whose filetypes
 match attaches, so a Lua buffer carries `lua_ls` *and* efm. Their diagnostics
-merge, which is the point of running it. But a bare `nx.lsp.format()` formats
+merge, which is the point of running it. But a bare `btv.lsp.format()` formats
 with the first attached server advertising `documentFormatting` **in config-name
 order**, and `biome` / `clangd` / `denols` / `basedpyright` all sort before
 `efm` — so it quietly runs someone else's formatter instead of the one you
 configured here. Name the server:
 
 ```lua
-local efmls = require("nxvim-efmls-configs")
+local efmls = require("bemtvi-efmls-configs")
 
--- efmls.format() is nx.lsp.format({ name = "efm" })
-nx.keymap.set("n", "<leader>lf", efmls.format, { desc = "Format with efm" })
+-- efmls.format() is btv.lsp.format({ name = "efm" })
+btv.keymap.set("n", "<leader>lf", efmls.format, { desc = "Format with efm" })
 
 -- Format on save: BufWritePre is gated, so RETURN the promise and the write waits.
-nx.autocmd.create("BufWritePre", {
+btv.autocmd.create("BufWritePre", {
   pattern = { "*.lua", "*.py" },
   callback = function()
     return efmls.format()
@@ -101,12 +101,12 @@ The list of supported linters and formatters is in
 
 ## Development
 
-The plugin carries a Lua test suite (`test/*_spec.lua`) on nxvim's native
-`nx.test` harness, including an end-to-end spec that formats a buffer through a
+The plugin carries a Lua test suite (`test/*_spec.lua`) on bemtvi's native
+`btv.test` harness, including an end-to-end spec that formats a buffer through a
 **real** `efm-langserver` + `stylua` subprocess. Run it from a checkout with:
 
 ```sh
-nxvim --test-plugin .
+bemtvi --test-plugin .
 ```
 
 Generated files (regenerate after editing their sources):
@@ -122,7 +122,7 @@ to date. Enable it once after cloning: `pre-commit install --hook-type pre-push`
 
 ## Credits
 
-A native nxvim port of [efmls-configs-nvim][efmls] by Arnold Chand
+A native bemtvi port of [efmls-configs-nvim][efmls] by Arnold Chand
 (creativenull) — MIT, Copyright (c) 2021 — which supplies the curated tool
 configurations ported here. [`efm-langserver`][efm-langserver] is by mattn.
 

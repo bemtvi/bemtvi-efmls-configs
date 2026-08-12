@@ -1,10 +1,10 @@
 -- The default linter/formatter set per language (mirrors doc/SUPPORTED_LIST.md).
 --
 -- Native port: upstream read `defaults.json` off disk at call time (`io.open` +
--- `vim.json.decode`). nxvim has no blocking Lua fs, so the mapping is inlined here as
+-- `vim.json.decode`). bemtvi has no blocking Lua fs, so the mapping is inlined here as
 -- data — `M.languages()` stays synchronous, collecting each tool preset through
--- `require`. Each preset is an `nx.async` factory (`() -> promise` of the efm config
--- table); `nxvim-efmls-configs.setup` awaits them to build the concrete map.
+-- `require`. Each preset is an `btv.async` factory (`() -> promise` of the efm config
+-- table); `bemtvi-efmls-configs.setup` awaits them to build the concrete map.
 
 local M = {}
 
@@ -30,7 +30,7 @@ local DEFAULTS = {
 }
 
 ---Default language map: `{ [filetype] = { <async tool factory>, … } }`. Each factory
----is an `nx.async` function returning a promise of its efm config table; await them
+---is an `btv.async` function returning a promise of its efm config table; await them
 ---(as `setup()` does) to get the concrete `languages` map.
 ---@return table
 function M.languages()
@@ -40,7 +40,7 @@ function M.languages()
       local key = string.lower(lang)
       local tools = {}
       for _, linter in ipairs(group.linters or {}) do
-        -- Parenthesised: nxvim's `require` returns (module, loader) — truncate to the
+        -- Parenthesised: bemtvi's `require` returns (module, loader) — truncate to the
         -- module so the loader path does not leak in as a second list element.
         table.insert(tools, (require('efmls-configs.linters.' .. linter)))
       end

@@ -3,8 +3,8 @@
 -- url: https://github.com/NixOS/nixfmt
 
 local fs = require('efmls-configs.fs')
-return nx.async(function()
-  local formatter = nx.await(fs.executable('nixfmt'))
+return btv.async(function()
+  local formatter = btv.await(fs.executable('nixfmt'))
   return {
     formatCommand = formatter,
     formatStdin = true,

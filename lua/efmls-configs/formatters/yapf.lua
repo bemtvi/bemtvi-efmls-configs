@@ -4,12 +4,12 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
-  local bin = nx.await(fs.executable('yapf'))
+return btv.async(function()
+  local bin = btv.await(fs.executable('yapf'))
 
   -- Range formatting is expressed through `xargs`. Probe for it asynchronously; fall
   -- back to whole-buffer formatting when it is not available.
-  local has_xargs = nx.await(fs.has_executable('xargs'))
+  local has_xargs = btv.await(fs.has_executable('xargs'))
 
   local command = bin
   if has_xargs then

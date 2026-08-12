@@ -4,10 +4,10 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'ruff'
   local args = "format --no-cache --stdin-filename '${INPUT}'"
-  local command = string.format('%s %s', nx.await(fs.executable(formatter)), args)
+  local command = string.format('%s %s', btv.await(fs.executable(formatter)), args)
 
   return {
     formatCommand = command,

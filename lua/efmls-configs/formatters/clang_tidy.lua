@@ -4,9 +4,9 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'clang-tidy'
-  local command = string.format("%s -fix '${INPUT}'", nx.await(fs.executable(formatter)))
+  local command = string.format("%s -fix '${INPUT}'", btv.await(fs.executable(formatter)))
 
   return {
     formatCommand = command,

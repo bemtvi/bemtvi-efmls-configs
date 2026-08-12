@@ -4,9 +4,9 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'smlfmt'
-  local command = nx.await(fs.executable(formatter))
+  local command = btv.await(fs.executable(formatter))
 
   return {
     formatCommand = command,

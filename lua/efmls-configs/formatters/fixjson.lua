@@ -3,8 +3,8 @@
 -- url: https://github.com/rhysd/fixjson
 
 local fs = require('efmls-configs.fs')
-return nx.async(function()
-  local formatter = nx.await(fs.executable('fixjson'))
+return btv.async(function()
+  local formatter = btv.await(fs.executable('fixjson'))
 
   return {
     formatCommand = formatter,

@@ -5,10 +5,10 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'typos'
 
-  local command = string.format('%s --format brief --color never -', nx.await(fs.executable(linter)))
+  local command = string.format('%s --format brief --color never -', btv.await(fs.executable(linter)))
 
   return {
     prefix = linter,

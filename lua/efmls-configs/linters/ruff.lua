@@ -5,11 +5,11 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'ruff'
   local command = string.format(
     '%s check --quiet --output-format github --stdin-filename "${INPUT}"',
-    nx.await(fs.executable(linter))
+    btv.await(fs.executable(linter))
   )
 
   return {

@@ -5,9 +5,9 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'chktex'
-  local command = string.format('%s -q -v0', nx.await(fs.executable(linter)))
+  local command = string.format('%s -q -v0', btv.await(fs.executable(linter)))
 
   return {
     prefix = linter,

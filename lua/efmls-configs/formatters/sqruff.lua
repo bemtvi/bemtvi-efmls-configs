@@ -4,10 +4,10 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'sqruff'
   local args = 'fix -'
-  local command = string.format('%s %s', nx.await(fs.executable(formatter)), args)
+  local command = string.format('%s %s', btv.await(fs.executable(formatter)), args)
 
   return {
     formatCommand = command,

@@ -4,9 +4,9 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'dprint'
-  local command = string.format("%s fmt --stdin '${INPUT}'", nx.await(fs.executable(formatter, fs.Scope.NODE)))
+  local command = string.format("%s fmt --stdin '${INPUT}'", btv.await(fs.executable(formatter, fs.Scope.NODE)))
 
   return {
     formatCommand = command,

@@ -1,21 +1,21 @@
--- nxvim-efmls-configs — ready-made efm-langserver configurations for nxvim.
+-- bemtvi-efmls-configs — ready-made efm-langserver configurations for bemtvi.
 --
 -- A native port of efmls-configs-nvim: a library of linter/formatter presets
--- (`efmls-configs.linters.*` / `efmls-configs.formatters.*`) driven onto nxvim's own
--- `nx.lsp` control surface. There is no neovim compatibility layer — `efm-langserver`
--- is just an LSP server nxvim spawns, and the presets are plain data (`lintCommand` /
+-- (`efmls-configs.linters.*` / `efmls-configs.formatters.*`) driven onto bemtvi's own
+-- `btv.lsp` control surface. There is no neovim compatibility layer — `efm-langserver`
+-- is just an LSP server bemtvi spawns, and the presets are plain data (`lintCommand` /
 -- `formatCommand` / root markers) it understands directly.
 --
 -- Loading is LAZY and per-language. Each preset is an async factory (`() -> promise`
 -- of its config), and nothing is resolved until you ask for a specific language via
 -- `load(ft, tools)`. The intended wiring is a FileType autocmd that loads exactly the
--- language of the buffer being opened, so a tool's binary is resolved (over nx.fs)
+-- language of the buffer being opened, so a tool's binary is resolved (over btv.fs)
 -- only when a file that needs it is first opened — never eagerly for the whole set.
 --
---   local efmls = require("nxvim-efmls-configs")
+--   local efmls = require("bemtvi-efmls-configs")
 --   efmls.setup({ root_markers = { ".git/" } })  -- efm's global options (optional)
 --
---   nx.autocmd.create("FileType", {
+--   btv.autocmd.create("FileType", {
 --     pattern = "lua",
 --     timeout = 5000,
 --     callback = function()
@@ -27,7 +27,7 @@
 --   })
 --
 -- `FileType` is an async-capable event, and returning `load`'s promise is what makes
--- the buffer land fully configured: nxvim holds the read sequence at the `FileType`
+-- the buffer land fully configured: bemtvi holds the read sequence at the `FileType`
 -- stage until every handler settles, so efm is registered + enabled BEFORE `BufEnter`
 -- / `BufWinEnter` — no window where the file is interactive but nothing lints it. Drop
 -- the promise instead and the wiring still happens, just unordered and with a failed
@@ -41,12 +41,12 @@
 --
 -- efm is a SECOND server on the buffer. Every enabled config whose filetypes match
 -- attaches (`lua_ls` *and* efm on a Lua buffer, `ts_ls` *and* efm on a TypeScript
--- one): each publishes its own diagnostics, and nxvim merges them. That is what you
+-- one): each publishes its own diagnostics, and bemtvi merges them. That is what you
 -- want for linting — and it is exactly why formatting must be aimed. A bare
--- `nx.lsp.format()` goes to the first attached server advertising
+-- `btv.lsp.format()` goes to the first attached server advertising
 -- `documentFormatting`, in config-NAME order, so `biome` / `clangd` / `denols` /
 -- `basedpyright` all win over `efm` and your prettier/stylua/black config is quietly
--- bypassed. Format through `efmls.format()` (or `nx.lsp.format({ name = "efm" })`).
+-- bypassed. Format through `efmls.format()` (or `btv.lsp.format({ name = "efm" })`).
 
 local defaults = require('efmls-configs.defaults')
 local fs = require('efmls-configs.fs')
@@ -59,7 +59,7 @@ M.defaults = defaults
 
 -- ----- accumulated efm state -------------------------------------------------
 
--- The nx.lsp config name for the shared efm server. ONE efm handles every loaded
+-- The btv.lsp config name for the shared efm server. ONE efm handles every loaded
 -- language, exactly like the upstream neovim plugin.
 local SERVER = 'efm'
 
@@ -83,12 +83,12 @@ M._loaded = {}
 -- RESTART the running server rather than rely on a config change reaching it.
 local efm_live = false
 
--- The same markers, spelled for nxvim's root resolution. `rootMarkers` is efm's own
+-- The same markers, spelled for bemtvi's root resolution. `rootMarkers` is efm's own
 -- setting and follows efm's convention, where a trailing slash means "a DIRECTORY
--- marker" (`.git/`); nxvim's `root_markers` matches a directory entry's NAME exactly,
+-- marker" (`.git/`); bemtvi's `root_markers` matches a directory entry's NAME exactly,
 -- so `.git/` handed to it never matches anything. One user-facing knob
 -- (`setup{ root_markers = }`), translated per consumer.
-local function nx_markers(markers)
+local function btv_markers(markers)
   local out = {}
   for _, m in ipairs(markers) do
     if type(m) == 'string' then
@@ -101,17 +101,17 @@ local function nx_markers(markers)
 end
 
 -- Build efm's config from the accumulated state and register + enable it. efm reads
--- its `languages` map only at spawn (nxvim delivers the config once, at the
+-- its `languages` map only at spawn (bemtvi delivers the config once, at the
 -- handshake; a running efm cannot be reconfigured at runtime), so whenever the map
 -- changes *after* efm is already running we must RESTART it — otherwise the live
 -- server would never see the change. (The upstream neovim plugin sidesteps this by
--- configuring the whole map eagerly, before its one efm ever starts; nxvim's
--- `nx.lsp.restart` lets us do it lazily against one server instead.)
+-- configuring the whole map eagerly, before its one efm ever starts; bemtvi's
+-- `btv.lsp.restart` lets us do it lazily against one server instead.)
 --
 -- EVERY change, not just a new language: this runs only from `do_load`, which a
 -- filetype reaches on its first load or on a `force` re-load — and a force re-load
 -- replaces that language's tools without adding one. Gating the restart on "the
--- language is new" left exactly that case silent: `nx.lsp._config` showed the
+-- language is new" left exactly that case silent: `btv.lsp._config` showed the
 -- replacement while the running efm kept applying the tools it spawned with.
 local function reconfigure()
   local o = M._opts
@@ -119,8 +119,8 @@ local function reconfigure()
   local cfg = {
     cmd = o.command or { 'efm-langserver' },
     filetypes = M._filetypes,
-    -- nxvim's OWN root resolution, which decides how many efm processes exist: a
-    -- server is keyed by (name, root), and with no `root_markers` nxvim falls back to
+    -- bemtvi's OWN root resolution, which decides how many efm processes exist: a
+    -- server is keyed by (name, root), and with no `root_markers` bemtvi falls back to
     -- each file's own DIRECTORY. A project with `src/` and `test/` then runs one efm
     -- per directory — not the single shared server this plugin is built around, and
     -- every `load()` restarts all of them. Feeding it the same markers efm uses
@@ -129,7 +129,7 @@ local function reconfigure()
     -- It reads as a duplicate of `settings.rootMarkers` below and is not: that one is
     -- efm's, telling efm's own linters where the project starts, and efm never sees
     -- this one.
-    root_markers = nx_markers(markers),
+    root_markers = btv_markers(markers),
     init_options = {
       documentFormatting = o.formatting ~= false,
       documentRangeFormatting = o.range_formatting ~= false,
@@ -146,28 +146,28 @@ local function reconfigure()
     cfg.capabilities = o.capabilities
   end
 
-  nx.lsp.config(SERVER, cfg)
+  btv.lsp.config(SERVER, cfg)
   -- `enable` also catches up every buffer already open — a language resolves over the
-  -- async `nx.fs` seam, so the buffers that triggered it have long since had their
+  -- async `btv.fs` seam, so the buffers that triggered it have long since had their
   -- `FileType` fired, and nothing re-fires it for a buffer whose filetype is set.
-  nx.lsp.enable({ SERVER })
+  btv.lsp.enable({ SERVER })
   -- If efm was already running, the changed config won't reach the live server —
   -- restart it so it respawns with the map as it stands now.
   if efm_live then
-    nx.lsp.restart(SERVER)
+    btv.lsp.restart(SERVER)
   end
   efm_live = true
 end
 
--- The actual per-language load: resolve the tool factories (in parallel, over nx.fs),
+-- The actual per-language load: resolve the tool factories (in parallel, over btv.fs),
 -- register the resolved configs under `ft`, and (re)configure the shared efm.
 --
 -- Each tool entry is a preset FACTORY (`require('efmls-configs.linters.eslint')`) or a
--- raw config table. nxvim's `require` returns TWO values (module, loader-path), and
+-- raw config table. bemtvi's `require` returns TWO values (module, loader-path), and
 -- the loader-path STRING leaks into the final slot of a `{ require(a), require(b) }`
 -- constructor — a pervasive footgun — so those strings are ignored rather than
 -- mistaken for a tool. Anything else (number/boolean/…) is a genuine mistake: loud.
-local do_load = nx.async(function(ft, tools)
+local do_load = btv.async(function(ft, tools)
   local promises = {} -- factories: called, awaited in parallel
   local ready = {} -- raw config tables: used as-is
   for _, tool in ipairs(tools) do
@@ -178,7 +178,7 @@ local do_load = nx.async(function(ft, tools)
       ready[#ready + 1] = tool
     elseif kind ~= 'string' then
       error(
-        ('nxvim-efmls-configs.load: %s has a %s tool entry (expected a preset factory or config table)'):format(
+        ('bemtvi-efmls-configs.load: %s has a %s tool entry (expected a preset factory or config table)'):format(
           ft,
           kind
         ),
@@ -188,11 +188,11 @@ local do_load = nx.async(function(ft, tools)
   end
 
   local configs = ready
-  for _, cfg in ipairs(nx.await(nx.promise.all(promises))) do
+  for _, cfg in ipairs(btv.await(btv.promise.all(promises))) do
     configs[#configs + 1] = cfg
   end
   if #configs == 0 then
-    error('nxvim-efmls-configs.load: ' .. tostring(ft) .. ' has no tools', 2)
+    error('bemtvi-efmls-configs.load: ' .. tostring(ft) .. ' has no tools', 2)
   end
 
   M._languages[ft] = configs
@@ -216,10 +216,10 @@ end)
 -- it from a FileType autocmd so a language loads only when its buffer is opened.
 function M.load(ft, tools, opts)
   if type(ft) ~= 'string' or ft == '' then
-    error('nxvim-efmls-configs.load: ft must be a non-empty string', 2)
+    error('bemtvi-efmls-configs.load: ft must be a non-empty string', 2)
   end
   if type(tools) ~= 'table' then
-    error('nxvim-efmls-configs.load: tools must be a list of preset factories', 2)
+    error('bemtvi-efmls-configs.load: tools must be a list of preset factories', 2)
   end
   if M._loaded[ft] and not (opts and opts.force) then
     return M._loaded[ft]
@@ -230,26 +230,26 @@ function M.load(ft, tools, opts)
 end
 
 -- M.format() — format the current buffer with **efm**, whatever else is attached.
--- Returns nx.lsp.format's promise (resolves once the edits land), so it sequences and
+-- Returns btv.lsp.format's promise (resolves once the edits land), so it sequences and
 -- can gate a write.
 --
 -- A buffer carries every server enabled for its filetype, and a bare
--- `nx.lsp.format()` picks the first one advertising `documentFormatting` in config-name
+-- `btv.lsp.format()` picks the first one advertising `documentFormatting` in config-name
 -- order — `biome`, `clangd`, `denols`, `basedpyright` all sort before `efm`. Naming the
 -- server is the difference between running the formatter you configured here and
 -- silently running someone else's. Bind it directly, or gate a write on it:
 --
---   nx.keymap.set("n", "<leader>lf", efmls.format, { desc = "Format with efm" })
+--   btv.keymap.set("n", "<leader>lf", efmls.format, { desc = "Format with efm" })
 --
---   nx.autocmd.create("BufWritePre", {
+--   btv.autocmd.create("BufWritePre", {
 --     pattern = "*.lua",
 --     callback = function() return efmls.format() end, -- RETURN: the write waits
 --   })
 --
--- `BufWritePre` is nxvim's gated event: returning the promise holds the write until
+-- `BufWritePre` is bemtvi's gated event: returning the promise holds the write until
 -- efm's edits are in the buffer, so format-on-save writes the formatted text.
 function M.format()
-  return nx.lsp.format({ name = SERVER })
+  return btv.lsp.format({ name = SERVER })
 end
 
 -- M.setup(opts) — set efm's GLOBAL options (it does NOT resolve any language; that is
@@ -259,11 +259,11 @@ end
 --   opts.formatting       bool advertise document formatting (default true)
 --   opts.range_formatting bool advertise range formatting (default true)
 --   opts.root_markers     list where a project starts (default { ".git/" }). Drives
---                              BOTH efm's own `settings.rootMarkers` AND nxvim's
+--                              BOTH efm's own `settings.rootMarkers` AND bemtvi's
 --                              server-root resolution, so one project runs one efm
 --                              rather than one per directory. A trailing slash is
 --                              efm's "directory marker" spelling; it is stripped for
---                              nxvim, which matches entry names exactly.
+--                              bemtvi, which matches entry names exactly.
 --   opts.on_attach        fn   function(client, bufnr) run when efm attaches
 --   opts.capabilities     tbl  client capabilities to broadcast
 --   opts.languages        map  filetype -> { <preset factory>, … }. CONVENIENCE:
@@ -275,7 +275,7 @@ end
 function M.setup(opts)
   opts = opts or {}
   if type(opts) ~= 'table' then
-    error('nxvim-efmls-configs.setup: opts must be a table', 2)
+    error('bemtvi-efmls-configs.setup: opts must be a table', 2)
   end
 
   M._opts = opts
@@ -287,8 +287,8 @@ function M.setup(opts)
   end
 
   if type(languages) == 'table' then
-    local group = nx.augroup.create('nxvim-efmls-configs', { clear = true })
-    -- `FileType` is async-capable, so the callback RETURNS load()'s promise: nxvim holds
+    local group = btv.augroup.create('bemtvi-efmls-configs', { clear = true })
+    -- `FileType` is async-capable, so the callback RETURNS load()'s promise: bemtvi holds
     -- the buffer's read sequence at the FileType stage until it settles, and efm is
     -- registered + enabled before BufEnter/BufWinEnter rather than racing them.
     --
@@ -299,10 +299,10 @@ function M.setup(opts)
     -- overrides it.
     local timeout = opts.load_timeout or 5000
     if type(timeout) ~= 'number' or timeout <= 0 then
-      error('nxvim-efmls-configs.setup: load_timeout must be a positive number of ms', 2)
+      error('bemtvi-efmls-configs.setup: load_timeout must be a positive number of ms', 2)
     end
     for ft, tools in pairs(languages) do
-      nx.autocmd.create('FileType', {
+      btv.autocmd.create('FileType', {
         group = group,
         pattern = ft,
         timeout = timeout,
@@ -321,7 +321,7 @@ function M.health()
   return health.check({ filetypes = M._filetypes })
 end
 
-nx.command('EfmlsHealth', function()
+btv.command('EfmlsHealth', function()
   M.health()
 end)
 

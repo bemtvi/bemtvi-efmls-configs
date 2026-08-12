@@ -5,10 +5,10 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'phpstan'
   local args = 'analyse --no-progress --no-ansi --error-format=raw "${INPUT}"'
-  local command = string.format('%s %s', nx.await(fs.executable(linter, fs.Scope.COMPOSER)), args)
+  local command = string.format('%s %s', btv.await(fs.executable(linter, fs.Scope.COMPOSER)), args)
 
   return {
     prefix = linter,

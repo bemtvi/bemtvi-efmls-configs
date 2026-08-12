@@ -4,10 +4,10 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'google-java-format'
 
-  local command = nx.await(fs.executable('google-java-format'))
+  local command = btv.await(fs.executable('google-java-format'))
     .. ' --aosp' -- Use AOSP style instead of Google Style (4-space indentation).
     .. ' $(echo -n ${--useless:rowStart} ${--useless:rowEnd}'
     .. " | xargs -n4 -r sh -c 'echo"
@@ -20,7 +20,7 @@ return nx.async(function()
 
   local is_windows = fs.is_windows
   if is_windows then
-    command = string.format('%s -', nx.await(fs.executable(formatter)))
+    command = string.format('%s -', btv.await(fs.executable(formatter)))
   end
 
   return {

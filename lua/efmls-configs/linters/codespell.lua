@@ -5,10 +5,10 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'codespell'
 
-  local command = string.format('%s --disable-colors "${INPUT}"', nx.await(fs.executable(linter)))
+  local command = string.format('%s --disable-colors "${INPUT}"', btv.await(fs.executable(linter)))
 
   return {
     prefix = linter,

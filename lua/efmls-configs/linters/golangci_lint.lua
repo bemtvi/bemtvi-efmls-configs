@@ -5,16 +5,16 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'golangci-lint'
-  local bin = nx.await(fs.executable(linter))
+  local bin = btv.await(fs.executable(linter))
 
   -- Pick the tab-output flag by golangci-lint major version (v2 renamed it). Runs
-  -- `golangci-lint version` for real over nx.run; if the binary is missing the run
+  -- `golangci-lint version` for real over btv.run; if the binary is missing the run
   -- rejects and we fall back to the v1 flag.
   local outputFormat = '--out-format tab'
   local ok, result = pcall(function()
-    return nx.await(nx.run({ cmd = bin, args = { 'version' } }))
+    return btv.await(btv.run({ cmd = bin, args = { 'version' } }))
   end)
   if ok and result and (result.stdout .. result.stderr):match('version%s+v?2%.') then
     outputFormat = '--output.tab.path=stdout'

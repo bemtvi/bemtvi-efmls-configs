@@ -11,9 +11,9 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'slither'
-  local bin = nx.await(fs.executable(linter))
+  local bin = btv.await(fs.executable(linter))
   local args = '--json - "${INPUT}"'
 
   -- Parsing JSON without `jq`, backtracking, or lazy matching is cursed,

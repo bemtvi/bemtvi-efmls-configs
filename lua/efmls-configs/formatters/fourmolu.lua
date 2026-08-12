@@ -4,9 +4,9 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'fourmolu'
-  local command = string.format("%s --stdin-input-file '${INPUT}' -", nx.await(fs.executable(formatter)))
+  local command = string.format("%s --stdin-input-file '${INPUT}' -", btv.await(fs.executable(formatter)))
 
   return {
     prefix = formatter,

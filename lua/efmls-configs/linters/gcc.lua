@@ -5,10 +5,10 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'gcc'
   local args = { '-Wpedantic', '-Wall', '-Wextra', '-fno-diagnostics-color', '-fsyntax-only', '"${INPUT}"' }
-  local command = string.format('%s %s', nx.await(fs.executable(linter)), table.concat(args, ' '))
+  local command = string.format('%s %s', btv.await(fs.executable(linter)), table.concat(args, ' '))
 
   return {
     prefix = linter,

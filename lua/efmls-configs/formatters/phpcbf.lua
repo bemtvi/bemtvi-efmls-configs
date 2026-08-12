@@ -4,9 +4,9 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'phpcbf'
-  local command = string.format('%s -', nx.await(fs.executable(formatter, fs.Scope.COMPOSER)))
+  local command = string.format('%s -', btv.await(fs.executable(formatter, fs.Scope.COMPOSER)))
 
   return {
     formatCommand = command,

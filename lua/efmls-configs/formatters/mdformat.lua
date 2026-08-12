@@ -9,10 +9,10 @@ local fs = require('efmls-configs.fs')
 -- behavior is somewhat disruptive for many people, we disable it by passing the
 -- `--number` flag
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'mdformat'
   local args = '--number -'
-  local command = string.format('%s %s', nx.await(fs.executable(formatter)), args)
+  local command = string.format('%s %s', btv.await(fs.executable(formatter)), args)
 
   return {
     formatCommand = command,

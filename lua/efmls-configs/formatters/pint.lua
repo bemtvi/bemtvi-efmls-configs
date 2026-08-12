@@ -4,10 +4,10 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'pint'
   local args = "'${INPUT}'"
-  local command = string.format('%s %s', nx.await(fs.executable(formatter, fs.Scope.COMPOSER)), args)
+  local command = string.format('%s %s', btv.await(fs.executable(formatter, fs.Scope.COMPOSER)), args)
 
   return {
     formatCommand = command,

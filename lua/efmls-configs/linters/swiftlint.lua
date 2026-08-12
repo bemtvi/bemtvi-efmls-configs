@@ -5,10 +5,10 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'swiftlint'
   local args = 'lint --use-stdin --quiet'
-  local command = string.format('%s %s', nx.await(fs.executable(linter, fs.Scope.NODE)), args)
+  local command = string.format('%s %s', btv.await(fs.executable(linter, fs.Scope.NODE)), args)
 
   return {
     prefix = linter,

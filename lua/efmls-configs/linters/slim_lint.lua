@@ -5,9 +5,9 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'slim-lint'
-  local command = string.format('%s --stdin-file-path "${INPUT}"', nx.await(fs.executable(linter, fs.Scope.BUNDLE)))
+  local command = string.format('%s --stdin-file-path "${INPUT}"', btv.await(fs.executable(linter, fs.Scope.BUNDLE)))
 
   return {
     prefix = linter,

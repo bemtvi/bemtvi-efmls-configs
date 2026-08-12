@@ -4,11 +4,11 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'sqlfluff'
   local command = string.format(
     '%s lint --dialect ansi --format github-annotation-native --annotation-level warning --nocolor --disable-progress-bar ${INPUT}',
-    nx.await(fs.executable(linter))
+    btv.await(fs.executable(linter))
   )
 
   return {

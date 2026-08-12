@@ -4,9 +4,9 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'forge'
-  local command = string.format('%s fmt --raw -', nx.await(fs.executable(formatter)))
+  local command = string.format('%s fmt --raw -', btv.await(fs.executable(formatter)))
 
   return {
     formatCommand = command,

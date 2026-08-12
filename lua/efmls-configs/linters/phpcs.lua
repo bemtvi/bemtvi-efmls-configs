@@ -5,11 +5,11 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'phpcs'
   local command = string.format(
     '%s --no-colors --report=emacs --stdin-path="${INPUT}" -',
-    nx.await(fs.executable(linter, fs.Scope.COMPOSER))
+    btv.await(fs.executable(linter, fs.Scope.COMPOSER))
   )
 
   return {

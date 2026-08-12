@@ -4,7 +4,7 @@
 -- for convenience.
 --
 -- To wire everything into efm-langserver in one call, use the plugin's native entry
--- point instead: `require('nxvim-efmls-configs').setup{ … }` (see its README).
+-- point instead: `require('bemtvi-efmls-configs').setup{ … }` (see its README).
 
 local M = {}
 

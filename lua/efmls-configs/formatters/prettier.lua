@@ -4,11 +4,11 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'prettier'
   local command = string.format(
     "%s --stdin --stdin-filepath '${INPUT}' ${--range-start:charStart} ${--range-end:charEnd} --config-precedence prefer-file",
-    nx.await(fs.executable(formatter, fs.Scope.NODE))
+    btv.await(fs.executable(formatter, fs.Scope.NODE))
   )
 
   return {

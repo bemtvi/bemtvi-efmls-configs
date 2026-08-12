@@ -5,11 +5,11 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'vint'
   local args = '--no-color --warning --format'
   local format = '{file_path}:{line_number}:{column_number}: {severity}: {description} (see {reference})'
-  local command = string.format('%s %s %q', nx.await(fs.executable(linter)), args, format)
+  local command = string.format('%s %s %q', btv.await(fs.executable(linter)), args, format)
 
   return {
     prefix = linter,

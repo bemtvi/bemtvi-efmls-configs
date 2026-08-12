@@ -4,10 +4,10 @@
 
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local formatter = 'stylelint'
   local args = '--fix --stdin'
-  local command = string.format('%s %s', nx.await(fs.executable(formatter, fs.Scope.NODE)), args)
+  local command = string.format('%s %s', btv.await(fs.executable(formatter, fs.Scope.NODE)), args)
 
   return {
     formatCommand = command,

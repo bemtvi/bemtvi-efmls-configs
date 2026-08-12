@@ -5,9 +5,9 @@
 local sourceText = require('efmls-configs.utils').sourceText
 local fs = require('efmls-configs.fs')
 
-return nx.async(function()
+return btv.async(function()
   local linter = 'djlint'
-  local bin = nx.await(fs.executable(linter))
+  local bin = btv.await(fs.executable(linter))
   local args = [[--linter-output-format 'I:{line}: {message}' --profile=django -]]
   local command = string.format('%s %s', bin, args)
 
