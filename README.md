@@ -1,7 +1,7 @@
 # bemtvi-efmls-configs
 
 Ready-made [`efm-langserver`][efm-langserver] configurations for
-[bemtvi](https://github.com/davidrios/bemtvi) — a native port of
+[bemtvi](https://github.com/bemtvi/bemtvi) — a native port of
 [efmls-configs-nvim](https://github.com/creativenull/efmls-configs-nvim).
 
 efm-langserver is a general-purpose language server that runs ordinary linters
