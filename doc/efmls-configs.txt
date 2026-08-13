@@ -1,4 +1,4 @@
-*efmls-configs.txt*                Ready-made efm-langserver configs for bemtvi
+*efmls-configs.txt*               Ready-made efm-langserver configs for bemtvi
 
 ==============================================================================
 Table of Contents                            *efmls-configs-table-of-contents*
@@ -31,8 +31,8 @@ returns a promise.
 
 This plugin only configures tools; it does not install them. Install
 `efm-langserver` and the linters/formatters you want yourself. A missing binary
-is reported by `:EfmlsHealth` and simply isn't run — bemtvi never pretends a
-tool that isn't there is working.
+is reported by `:EfmlsHealth` and simply isn't run — bemtvi never pretends
+a tool that isn't there is working.
 
 
 ==============================================================================
@@ -194,15 +194,15 @@ or to extend:
 
 efm is a SECOND server on the buffer. Every enabled config whose filetypes
 match attaches, so a Lua buffer carries `lua_ls` _and_ efm, a TypeScript one
-`ts_ls` _and_ efm. Each publishes its own diagnostics and bemtvi merges them —
-which is exactly what you want from a linter, and exactly why formatting has to
-be aimed.
+`ts_ls` _and_ efm. Each publishes its own diagnostics and bemtvi merges them
+— which is exactly what you want from a linter, and exactly why formatting
+has to be aimed.
 
-A bare `btv.lsp.format()` formats with the first attached server that advertises
-`documentFormatting`, in config-NAME order. `biome`, `clangd`, `cssls`,
-`denols`, `basedpyright` all sort before `efm`, so on a real config the bare
-call quietly runs someone else's formatter and your prettier / stylua / black
-setup here never gets a look in. Name the server:
+A bare `btv.lsp.format()` formats with the first attached server that
+advertises `documentFormatting`, in config-NAME order. `biome`, `clangd`,
+`cssls`, `denols`, `basedpyright` all sort before `efm`, so on a real config
+the bare call quietly runs someone else's formatter and your prettier /
+stylua / black setup here never gets a look in. Name the server:
 
 >lua
     local efmls = require("bemtvi-efmls-configs")
@@ -211,10 +211,10 @@ setup here never gets a look in. Name the server:
     btv.keymap.set("n", "<leader>lf", efmls.format, { desc = "Format with efm" })
 <
 
-`format()` returns the promise `btv.lsp.format` returns — it resolves once the
-edits are in the buffer, so it can gate a write. `BufWritePre` is bemtvi's
-gated event: RETURN the promise and the write waits, so format-on-save writes
-formatted text rather than racing the save.
+`format()` returns the promise `btv.lsp.format` returns — it resolves once
+the edits are in the buffer, so it can gate a write. `BufWritePre` is
+bemtvi's gated event: RETURN the promise and the write waits, so
+format-on-save writes formatted text rather than racing the save.
 
 >lua
     btv.autocmd.create("BufWritePre", {
