@@ -14,7 +14,7 @@
 -- Any missing binary is reported by `:EfmlsHealth` (and efm simply won't run that
 -- tool) — bemtvi never pretends a tool that isn't installed is working.
 
-vim.g.mapleader = ' '
+btv.g.mapleader = ' '
 
 -- Load the plugin straight from this repo (a local-dev spec: `dir` is never cloned).
 -- A real config declares `{ "bemtvi/bemtvi-efmls-configs", config = … }` and runs
@@ -22,7 +22,7 @@ vim.g.mapleader = ' '
 btv.plugins({
   {
     name = 'bemtvi-efmls-configs',
-    dir = vim.fn.expand('<sfile>:p:h:h'), -- the repo root (this file's grandparent dir)
+    dir = btv.expand('<sfile>:p:h:h'), -- the repo root (this file's grandparent dir)
     config = function()
       local efmls = require('bemtvi-efmls-configs')
 

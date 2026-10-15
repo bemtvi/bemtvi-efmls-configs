@@ -62,7 +62,11 @@ M.which = btv.async(function(name)
     return btv.await(btv.fs.exists(name)) and name or nil
   end
 
-  local path = vim.env.PATH or ''
+  -- `btv.env.get` returns a non-string sentinel (v:null) for an unset variable.
+  local path = btv.env.get('PATH')
+  if type(path) ~= 'string' then
+    path = ''
+  end
   for dir in string.gmatch(path, '([^' .. PATHSEP .. ']+)') do
     local candidate = dir .. '/' .. name
     if btv.await(btv.fs.exists(candidate)) then
@@ -94,7 +98,7 @@ M.executable = btv.async(function(name, context)
   -- project-local (node_modules/.bin, vendor/bin, …)
   local rel = context and FilepathByScope[context]
   if rel then
-    local candidate = string.format('%s/%s/%s', vim.fn.getcwd(), rel, name)
+    local candidate = string.format('%s/%s/%s', btv.cwd(), rel, name)
     if btv.await(btv.fs.exists(candidate)) then
       table.insert(hc.ok, string.format('%q: found at %s', name, candidate))
       return candidate

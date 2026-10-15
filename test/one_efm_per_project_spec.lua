@@ -17,7 +17,9 @@
 local efmls = require('bemtvi-efmls-configs')
 
 local function on_path(name)
-  for dir in string.gmatch(vim.env.PATH or '', '([^:]+)') do
+  -- `btv.env.get` returns a non-string sentinel (v:null) for an unset variable.
+  local path = btv.env.get('PATH')
+  for dir in string.gmatch(type(path) == 'string' and path or '', '([^:]+)') do
     if btv.await(btv.fs.exists(dir .. '/' .. name)) then
       return true
     end

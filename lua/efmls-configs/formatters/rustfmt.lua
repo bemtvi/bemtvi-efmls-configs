@@ -10,7 +10,7 @@ return btv.async(function()
 
   -- Pass the crate's Rust edition to rustfmt. Read Cargo.toml for real over btv.fs,
   -- walking up from the cwd until it is found.
-  local dir = vim.fn.getcwd()
+  local dir = btv.cwd()
   while dir and dir ~= '' do
     local cargo = dir .. '/Cargo.toml'
     if btv.await(btv.fs.exists(cargo)) then

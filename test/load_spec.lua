@@ -17,7 +17,7 @@ btv.test.describe('bemtvi-efmls-configs.load', function()
     local efm = btv.lsp._config.efm
     btv.test.expect(efm).to_be_truthy()
     btv.test.expect(btv.lsp._enabled.efm).to_be_truthy()
-    btv.test.expect(vim.tbl_contains(efm.filetypes, 'lua')).to_be(true)
+    btv.test.expect(btv.tbl.contains(efm.filetypes, 'lua')).to_be(true)
 
     -- Real resolved command (no placeholder), pointing at luacheck.
     local lint = efm.settings.languages.lua[1].lintCommand
@@ -78,7 +78,7 @@ btv.test.describe('bemtvi-efmls-configs.load', function()
     -- lua (earlier) and go both present now.
     btv.test.expect(efm.settings.languages.lua).to_be_truthy()
     btv.test.expect(efm.settings.languages.go).to_be_truthy()
-    btv.test.expect(vim.tbl_contains(efm.filetypes, 'go')).to_be(true)
+    btv.test.expect(btv.tbl.contains(efm.filetypes, 'go')).to_be(true)
   end)
 end)
 
