@@ -25,10 +25,12 @@ M.Scope = {
   BUNDLE = 'BUNDLE',
 }
 
+-- Project-local bin dirs, relative to the cwd. BUNDLE has no single bin dir; see
+-- `bundled` below.
 local FilepathByScope = {
   NODE = 'node_modules/.bin',
   COMPOSER = 'vendor/bin',
-  BUNDLE = 'vendor/bundle',
+  BUNDLE = 'bin',
 }
 
 -- Platform sniff (a `package.config` constant — no IO). bemtvi has no native win32
@@ -95,23 +97,94 @@ M.has_executable = btv.async(function(name)
   return btv.await(M.which(name)) ~= nil
 end)
 
+-- Where a Bundler project installs its gems, relative to `root` unless absolute:
+-- the project's own `.bundle/config` `BUNDLE_PATH` wins over the `BUNDLE_PATH`
+-- environment variable (Bundler's local > env precedence), and `vendor/bundle` (the
+-- old `bundle install --path vendor/bundle` convention) is the fallback.
+local function bundle_path(root)
+  local path
+  local config = root .. '/.bundle/config'
+  if btv.await(btv.fs.exists(config)) then
+    local text = btv.await(btv.fs.read_text(config))
+    path = ('\n' .. text):match('\nBUNDLE_PATH:%s*["\']?([^"\'\n]+)')
+  end
+  if not path then
+    local env = btv.env.get('BUNDLE_PATH')
+    path = type(env) == 'string' and env ~= '' and env or 'vendor/bundle'
+  end
+  path = path:gsub('%s+$', '')
+  return path:sub(1, 1) == '/' and path or (root .. '/' .. path)
+end
+
+-- A gem installed into the project's bundle path: `<path>/ruby/<ruby version>/bin/<name>`.
+-- That file is a plain RubyGems wrapper which does not see the project's gems by
+-- itself (run directly it activates whatever system gem matches, or fails), so it is
+-- run through `bundle exec`, pinned to the project's Gemfile. Returns the command
+-- prefix, or nil (with the reason recorded) when there is no such gem or no bundler.
+local function bundled(root, name, hc)
+  local gemfile
+  for _, file in ipairs({ 'Gemfile', 'gems.rb' }) do
+    if btv.await(btv.fs.exists(root .. '/' .. file)) then
+      gemfile = root .. '/' .. file
+      break
+    end
+  end
+  if not gemfile then
+    return nil
+  end
+
+  local rubies = bundle_path(root) .. '/ruby'
+  if not btv.await(btv.fs.exists(rubies)) then
+    return nil
+  end
+  local found
+  for _, entry in ipairs(btv.await(btv.fs.readdir(rubies))) do
+    local candidate = string.format('%s/%s/bin/%s', rubies, entry.name, name)
+    if entry.type ~= 'file' and btv.await(btv.fs.exists(candidate)) then
+      found = candidate
+      break
+    end
+  end
+  if not found then
+    return nil
+  end
+
+  local bundle = btv.await(M.which('bundle'))
+  if not bundle then
+    table.insert(hc.errors, string.format('%q: installed at %s, but `bundle` is not on $PATH to run it', name, found))
+    return nil
+  end
+  table.insert(hc.ok, string.format('%q: found at %s (run via bundle exec)', name, found))
+  return string.format("BUNDLE_GEMFILE='%s' %s exec %s", gemfile, bundle, name)
+end
+
 ---Resolve a tool binary — the project-local scope dir first (npm/composer/bundler
 ---bin), then the global `$PATH` — recording the outcome for `:EfmlsHealth`. Async:
 ---returns a promise of the resolved path, or the bare `name` on a miss (so efm's own
 ---shell can still try it). Await it inside an `btv.async` preset.
+---
+---With `Scope.BUNDLE`, a gem installed into the project's bundle path (not a
+---`bin/` binstub) resolves to a `BUNDLE_GEMFILE='…' bundle exec <name>` command
+---prefix rather than a path, since its wrapper only runs correctly under Bundler.
 ---@param name string
 ---@param context? ScopeType
 ---@return string promise
 M.executable = btv.async(function(name, context)
   local hc = healthcheck()
 
-  -- project-local (node_modules/.bin, vendor/bin, …)
+  -- project-local (node_modules/.bin, vendor/bin, a Bundler binstub in bin/, …)
   local rel = context and FilepathByScope[context]
   if rel then
     local candidate = string.format('%s/%s/%s', btv.cwd(), rel, name)
     if btv.await(btv.fs.exists(candidate)) then
       table.insert(hc.ok, string.format('%q: found at %s', name, candidate))
       return candidate
+    end
+  end
+  if context == M.Scope.BUNDLE then
+    local command = bundled(btv.cwd(), name, hc)
+    if command then
+      return command
     end
   end
 
