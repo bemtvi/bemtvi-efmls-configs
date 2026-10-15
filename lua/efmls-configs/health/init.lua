@@ -2,7 +2,7 @@
 -- `vim.health` provider surface, so this reports, through `btv.notify`:
 --
 --   * the tool-resolution results `efmls-configs.fs.executable` accumulated into
---     `_G._efmls.healthcheck` — each bundled linter/formatter found on `$PATH` (or in
+--     `efmls-configs.fs.health()` — each bundled linter/formatter found on `$PATH` (or in
 --     a project-local bin dir), and each that was missing;
 --   * efm's LIVE state, read off `btv.lsp.clients` — is the server actually running,
 --     and is it attached to the buffer you are in?
@@ -19,7 +19,7 @@ local M = {}
 local SERVER = 'efm'
 
 local function healthcheck()
-  return _G._efmls and _G._efmls.healthcheck or { errors = {}, ok = {} }
+  return require('efmls-configs.fs').health()
 end
 
 -- The live efm picture: is it running anywhere, and is it on the current buffer?

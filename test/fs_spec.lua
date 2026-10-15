@@ -11,7 +11,7 @@ btv.test.describe('efmls-configs.fs.executable (async)', function()
     btv.test.expect(path:match('/sh$')).to_be_truthy()
 
     local found = false
-    for _, ok in ipairs(_G._efmls.healthcheck.ok) do
+    for _, ok in ipairs(fs.health().ok) do
       if ok:find('sh', 1, true) then
         found = true
       end
@@ -26,7 +26,7 @@ btv.test.describe('efmls-configs.fs.executable (async)', function()
     btv.test.expect(path).to_be(bogus)
 
     local found = false
-    for _, err in ipairs(_G._efmls.healthcheck.errors) do
+    for _, err in ipairs(fs.health().errors) do
       if err:find(bogus, 1, true) then
         found = true
       end

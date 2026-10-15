@@ -39,15 +39,25 @@ local PATHSEP = M.is_windows and ';' or ':'
 
 -- ----- health accumulator (surfaced by :EfmlsHealth) -------------------------
 
+-- Module-local rather than a `_G` global: every reader goes through `M.health()`, and
+-- `require` caches this module, so the report lives as long as the session does.
+local health = { errors = {}, ok = {} }
+
 local function healthcheck()
-  _G._efmls = _G._efmls or { healthcheck = { errors = {}, ok = {} } }
-  return _G._efmls.healthcheck
+  return health
+end
+
+---The tool-resolution report accumulated since the last `reset_health()`: `ok` and
+---`errors`, each a list of human-readable lines. Read by `:EfmlsHealth`.
+---@return { errors: string[], ok: string[] }
+M.health = function()
+  return health
 end
 
 ---Start a fresh health report. Called by `setup()` before it resolves a config, so
 ---`:EfmlsHealth` reflects the current resolution rather than accumulating stale runs.
 M.reset_health = function()
-  _G._efmls = { healthcheck = { errors = {}, ok = {} } }
+  health = { errors = {}, ok = {} }
 end
 
 -- ----- async resolution ------------------------------------------------------
