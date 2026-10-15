@@ -25,7 +25,10 @@ btv.test.describe('multiline format (no scrambling)', function()
     local dir = btv.test.tempdir()
     -- Explicit style so the expected output is deterministic across stylua versions.
     btv.await(
-      btv.fs.write(dir .. '/stylua.toml', 'indent_type = "Spaces"\nindent_width = 2\nquote_style = "AutoPreferDouble"\n')
+      btv.fs.write(
+        dir .. '/stylua.toml',
+        'indent_type = "Spaces"\nindent_width = 2\nquote_style = "AutoPreferDouble"\n'
+      )
     )
     local file = dir .. '/s.lua'
     btv.await(btv.fs.write(

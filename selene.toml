@@ -1,0 +1,10 @@
+std = "bemtvi"
+# examples/sample.lua is deliberately broken demo input (undefined globals, unused
+# locals) for efm's linters to flag when you run the example; it must stay that way.
+exclude = [".panvimdoc/**", "examples/sample.lua"]
+
+[lints]
+# `"\u{XXXX}"` is a valid 5.3+ escape, but the lua51 base std doesn't know it.
+bad_string_escape = "allow"
+# Mixed tables are idiomatic in btv specs (`{ "owner/repo", config = fn }`).
+mixed_table = "allow"

@@ -1,8 +1,21 @@
-# Enable the pre-push hook once after cloning:
-#   pre-commit install --hook-type pre-push
+# Enable the hooks once after cloning:
+#   pre-commit install && pre-commit install --hook-type pre-push
 repos:
   - repo: local
     hooks:
+      - id: stylua
+        name: stylua
+        entry: stylua --check
+        language: system
+        types: [lua]
+        # stylua ignores .styluaignore for files passed on the command line, so
+        # the deliberately messy demo sample is excluded here too.
+        exclude: ^examples/sample\.lua$
+      - id: selene
+        name: selene
+        entry: selene
+        language: system
+        types: [lua]
       - id: generated-docs-up-to-date
         name: generated docs up to date
         entry: scripts/check-generated.sh
