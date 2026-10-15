@@ -57,6 +57,13 @@ btv.test.describe('bundled presets', function()
         local cmd = cfg.lintCommand or cfg.formatCommand or ''
         btv.test.expect(#cmd > 0).to_be(true)
         btv.test.expect(cmd:find('${EFMLS', 1, true)).to_be_nil()
+        -- Diagnostics are labelled `efm/<tool>` (utils.sourceText) like every sibling.
+        -- A preset that declared `lintSource` twice had the bare tool name win.
+        if cfg.lintSource ~= nil then
+          if cfg.lintSource ~= 'efm/' .. tostring(cfg.prefix) then
+            error(string.format('%s: lintSource is %q, want "efm/%s"', mod, cfg.lintSource, tostring(cfg.prefix)))
+          end
+        end
         total = total + 1
       end
     end

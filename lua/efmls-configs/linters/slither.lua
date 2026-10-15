@@ -52,7 +52,6 @@ return btv.async(function()
     },
     lintCommand = command,
     lintIgnoreExitCode = true,
-    lintSource = linter,
     -- Can only support linting on save, see:
     -- https://github.com/crytic/slither/issues/2057
     lintStdin = false,

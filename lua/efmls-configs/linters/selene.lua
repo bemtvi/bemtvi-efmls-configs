@@ -12,7 +12,6 @@ return btv.async(function()
   return {
     prefix = linter,
     lintSource = sourceText(linter),
-    lintSource = linter,
     lintCommand = command,
     lintIgnoreExitCode = true,
     lintStdin = true,

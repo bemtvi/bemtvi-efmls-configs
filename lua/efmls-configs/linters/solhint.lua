@@ -16,7 +16,6 @@ return btv.async(function()
     lintSource = sourceText(linter),
     lintCommand = command,
     lintIgnoreExitCode = true,
-    lintSource = linter,
     lintStdin = true,
     lintFormats = {
       '%*[ ]%l:%c%*[ ]%trror%*[ ]%m',
